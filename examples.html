@@ -20,6 +20,8 @@
 <body>
 
   <div id="container">
+
+  	<h1>Images are exactly the same size as the viewport</h1>
     
     <div id="carousel1" class="slideshow">
     	<figure>
@@ -56,6 +58,8 @@
 
     <div style="clear:both;"></div>
 
+    <h1>Images are smaller than the viewport but they extend beyond the viewport</h1>
+
     <div  id="carousel2" class="slideshow">
     	<figure>
     		<img src="http://placehold.it/100x100/CB0713" />
@@ -89,6 +93,10 @@
     	</figure>
     </div>  
 
+    <div style="clear:both;"></div>
+
+    <h1>Images are smaller than the viewport and they don't extend beyond the viewport</h1>
+
     <div  id="carousel3" class="slideshow">
     	<figure>
     		<img src="http://placehold.it/100x100/CB0713" />
@@ -111,6 +119,32 @@
     
     </div>  
 
+
+    <div style="clear:both;"></div>
+
+    <h1>Images are larger than the viewport </h1>
+
+    <div id="carousel4" class="slideshow">
+    	<figure>
+    		<img src="http://placehold.it/600x100/CB0713" />
+    		<figcaption>
+    			Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    		</figcaption>
+    	</figure>
+    	<figure>
+    		<img src="http://placehold.it/200x100/FE3D18" />
+    		<figcaption>
+    			Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+    		</figcaption>
+    	</figure>
+    	<figure>
+    		<img src="http://placehold.it/500x100/F7BC05" />
+    		<figcaption>
+    			Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+    		</figcaption>
+    	</figure>    
+    </div>  
+
   </div> <!-- eo #container -->
 
 
@@ -120,9 +154,10 @@
 
 
   <script type="text/javascript">
-  	var carousel1 = Carousel($("#carousel1"));
-  	var carousel2 = Carousel($("#carousel2"));
-  	var carousel2 = Carousel($("#carousel3"));
+  	var carousel1 = Carousel($("#carousel1"),{speed:100, debug:true});
+  	var carousel2 = Carousel($("#carousel2"),{speed:500, debug:false});
+  	var carousel3 = Carousel($("#carousel3"),{speed:300, debug:false});
+  	var carousel4 = Carousel($("#carousel4"),{speed:300, debug:false});
 
   </script>
 

@@ -1,3 +1,8 @@
+/********************************************************************************************
+* Author: Sebastian Porto
+* August 2011
+* ******************************************************************************************/
+
 var Carousel = function(element, args){
 	var _that = this;
 	var _$element = element;
@@ -9,14 +14,17 @@ var Carousel = function(element, args){
 	var _originalItemsWidthsArray = [];
 	var _clonedItemsTotalWidth = 0 ; //total width of the movable area
 	var _clonedItemsWidthsArray = [];
-	var _currentItem = 0;
+	var _currentIndex = 0;
 	var _$arrowPrevious;
 	var _$arrowNext;
 	var _clickEnable=true;
+	var _speed = 1000;
+	var _debug = false;
+
+	if(args.speed) _speed = args.speed;
+	if(args.debug) _debug = args.debug;
 
 	init();
-
-
 
 	function init(){
 	//store the width of the container
@@ -34,6 +42,7 @@ var Carousel = function(element, args){
 		
 	//set up the styles of the elements
 		_$element.css("position","relative");
+		_$element.css("overflow-x","hidden");
 		_$movable.css("position","absolute");
 		_originalItems.css("float","left");
 
@@ -54,10 +63,17 @@ var Carousel = function(element, args){
 
 	//add elements on the right as necessary
 	//there has two be two at least
-	addSetOnRigth();
+		addSetOnRigth();
+
 	//this has to be necessary to cover the width of 2 viewports
-		while(_clonedItemsTotalWidth < (_viewportWidth*2) ) {
+		var tooMany = 0;
+		while(_clonedItemsTotalWidth < (_viewportWidth*3) ) {
+			tooMany++;
 			addSetOnRigth();
+			if(tooMany>40){
+				log("Too many copies!!!")
+				break;
+			}
 		}
 
 		//check if we still need more items
@@ -70,6 +86,8 @@ var Carousel = function(element, args){
 		_$movable.width(_clonedItemsTotalWidth);
 
 		setupArrows();
+
+		addHighlight(0);
 
 	}//init
 
@@ -122,32 +140,56 @@ var Carousel = function(element, args){
 	}
 
 	function move(dir){
-		moveTo( _currentItem + dir);
+		moveTo( _currentIndex + dir);
 	}
 
-	function moveTo(index){
-		log( "moveTo " + index );
-		log("_clickEnable" + _clickEnable);
+	function moveTo(toIndex){
+		log( "-------moveTo " + toIndex );
+		// log("_clickEnable" + _clickEnable);
+		log("_currentIndex " + _currentIndex);
 
 		_clickEnable = false;
+		removeHighlight(_currentIndex);
 		
-		if(index===_currentItem) return;
+		if(toIndex===_currentIndex) return;
 
-		if(index<0){
-			shiftLeft();
-			_currentItem=_originalItems.length;
-			index = _currentItem-1;
+		var indexDif = toIndex - _currentIndex;
+		log("indexDif " + indexDif);
+
+		//shift the movable to the left if necessary (when moving to previous items)
+		if(toIndex<0){
+			shiftMovableAllLeft();
+			// _currentIndex=_originalItems.length;			
+			toIndex = _currentIndex + indexDif;
 		}
 
-		animate(_currentItem,index);
+		//shift the movable to the right if necessary
+		if(_currentIndex>=_originalItems.length && toIndex>_currentIndex ){
+			shiftMovableAllRight();			
+			toIndex = _currentIndex + indexDif;
+		}
+		
+		animate(_currentIndex,toIndex);
+
+		_currentIndex = toIndex;
+		addHighlight(_currentIndex);
 	}
 
 	function getDifference(fromIndex,toIndex){
+
+		if(fromIndex<0) throw("fromIndex invalid " + fromIndex);
+		if(toIndex<0) throw("toIndex invalid " + toIndex);
+
+		log("getDifference");
+		log("fromIndex " + fromIndex);
+		log("toIndex " + toIndex);
+
 		if(fromIndex===toIndex) return 0;
 
 		var dif = 0;
 
 		if(fromIndex>toIndex){
+			log("Backwards");
 			for(var ix = toIndex; ix<fromIndex; ix++){
 				dif += _clonedItemsWidthsArray[ix];
 			}
@@ -155,6 +197,7 @@ var Carousel = function(element, args){
 		}
 
 		if(fromIndex<toIndex){
+			log("Forward");
 			for(var ix = fromIndex; ix<toIndex; ix++){
 				dif += _clonedItemsWidthsArray[ix];
 			}
@@ -163,16 +206,22 @@ var Carousel = function(element, args){
 	}
 
 	function animate(fromIndex,toIndex){
-		// log("fromIndex " + fromIndex);
-		// log("toIndex" + toIndex);
+		log("animate");
+		log("fromIndex " + fromIndex);
+		log("toIndex" + toIndex);
 
 		// log("difference " + getDifference(fromIndex, toIndex));
 		var dif = getDifference(fromIndex, toIndex);
+		log("dif " + dif);
 
-		shiftMovable(dif);
-		_currentItem = toIndex;
+		var newLeft = getMovableLeft() + dif;
 
-		animateDone();
+		log("newLeft " + newLeft);
+
+		_$movable.animate({
+			left:newLeft
+		},_speed,animateDone);
+
 	}
 
 	function animateDone(){
@@ -183,21 +232,84 @@ var Carousel = function(element, args){
 		return _$movable.position().left;
 	}
 
+	function getMovableRight(){
+		return getMovableLeft() + _clonedItemsTotalWidth;
+	}
+
 	function setMovableLeft(left){
 		_$movable.css("left",left);
 	}
 
-	function shiftMovable(dist){
+	function moveMovable(dist){
 		setMovableLeft(getMovableLeft() + dist);
 	}
 
-	function shiftLeft(){
-		shiftMovable( - _originalItemsTotalWidth);
+	function shiftMovableAllLeft(){
+		while(getMovableRight()>_viewportWidth){
+			if(!shiftMovableOneLeft()) break;
+		}
 	}
+
+	function shiftMovableOneLeft(){
+		log("shiftMovableOneLeft");
+
+		var newCurrentIndex =_currentIndex + _originalItems.length;
+
+		var check1 = (getMovableRight()-_originalItemsTotalWidth) >= _viewportWidth;
+		var check2 = newCurrentIndex < _clonedItemsWidthsArray.length;
+
+		if(check1 && check2){
+			moveMovable( - _originalItemsTotalWidth);
+			_currentIndex = newCurrentIndex;
+			log("new currentIndex " + _currentIndex);
+			return true;
+		}else{
+			log("Cannot more the movable left any further");
+			return false;
+		}
+	}
+
+	function shiftMovableAllRight(){
+		//move the movable all the way to the extreme right
+
+		while(getMovableLeft()<0){
+			if(!shiftMovableOneRight()) break;
+		}
+	}
+
+	function shiftMovableOneRight(){
+		log("shiftMovableOneRight");
+
+		var newCurrentIndex =_currentIndex - _originalItems.length;
+
+		var check1 = getMovableLeft()<0;//there are no items on the left
+		var check2 = newCurrentIndex>=0;
+
+		if(check1 && check2 ){
+			moveMovable(_originalItemsTotalWidth);
+			_currentIndex = newCurrentIndex;
+			log("new currentIndex " + _currentIndex);
+			return true;
+		}else{
+			log("Cannot move movable right any further");
+			return false;
+		}
+
+	}
+
+	function addHighlight(index){
+		$("figure",_$element).eq(index).fadeTo(0,1);
+	}
+
+	function removeHighlight(index){
+		$("figure",_$element).eq(index).fadeTo(0,.5);
+	}
+
 
 	// function reset
 
 	function log(msg){
+		if(!_debug) return;
 		if(console.log) console.log(msg);
 	}
 
