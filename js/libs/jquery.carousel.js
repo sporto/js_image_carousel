@@ -9,9 +9,22 @@ var Carousel = function(element, args){
 	// var _element = element.get();//store the DOM element
 	var _$movable;
 	var _viewportWidth = 0; //the width of the viewport
-	var _originalItemsTotalWidth = 0; //original width of all the figures, no clones counted
+	
 	var _originalItems = [];//references to the original figures, no clones here
+	var _originalItemsCount = 0;
+	var _originalItemsTotalWidth = 0; //original width of all the figures, no clones counted
 	var _originalItemsWidthsArray = [];
+	
+	var _preItems = [];
+	var _preItemsCount = 0;
+	var _preItemsTotalWidth = 0;
+	var _preItemsWidthsArray = [];
+	
+	var _postItems = [];
+	var _postItemsCount = 0;
+	var _postItemsTotalWidth = 0;
+	var _postItemsWidthsArray = [];
+
 	var _clonedItemsTotalWidth = 0 ; //total width of the movable area
 	var _clonedItemsWidthsArray = [];
 	var _currentIndex = 0;
@@ -34,62 +47,126 @@ var Carousel = function(element, args){
 		$("figure",_$element).wrapAll("<div class='movable' />");
 		_$movable = $(".movable",_$element);
 
-	//store references to the original elements
-		_originalItems = $("figure",_$element);
+	processOriginalItems();
 
-		//hide the captions
-		$("figure figcaption",_$element).hide();
-		
 	//set up the styles of the elements
 		_$element.css("position","relative");
-		_$element.css("overflow-x","hidden");
+		// _$element.css("overflow-x","hidden");
 		_$movable.css("position","absolute");
-		_originalItems.css("float","left");
-
-	//change the opacity of each image
-		_originalItems.fadeTo(0,0.5);
-
-	//make an array with the size of each image
-	//store the total width of the images
-		$("figure img",_$element).each(function(){
-			var w = $(this).width()
-			_originalItemsWidthsArray.push(w);
-			_clonedItemsWidthsArray.push(w);
-			_originalItemsTotalWidth += w;			
-		});
 
 	//store the starting width of the movable
-		_clonedItemsTotalWidth = _originalItemsTotalWidth;
+		// _clonedItemsTotalWidth = _originalItemsTotalWidth;
+
+	//clone one item on the left
+		makePreItems();
+
+	//clone elements on the right
+		makePostItems();
 
 	//add elements on the right as necessary
 	//there has two be two at least
-		addSetOnRigth();
+		// addSetOnRigth();
 
 	//this has to be necessary to cover the width of 2 viewports
-		var tooMany = 0;
-		while(_clonedItemsTotalWidth < (_viewportWidth*3) ) {
-			tooMany++;
-			addSetOnRigth();
-			if(tooMany>40){
-				log("Too many copies!!!")
-				break;
-			}
-		}
+		// var tooMany = 0;
+		// while(_clonedItemsTotalWidth < (_viewportWidth*3) ) {
+		// 	tooMany++;
+		// 	addSetOnRigth();
+		// 	if(tooMany>40){
+		// 		log("Too many copies!!!")
+		// 		break;
+		// 	}
+		// }
 
-		//check if we still need more items
-		//to do later
-
-		//add click listener to elements
+	//add click listener to elements
 		$("figure",_$element).click(onItemClick);
 	
 	//resize the container
-		_$movable.width(_clonedItemsTotalWidth);
+		// _$movable.width(_clonedItemsTotalWidth);
 
 		setupArrows();
 
-		addHighlight(0);
+		addHighlight(_currentIndex);
 
 	}//init
+
+	function processOriginalItems(){
+		//store references to the original elements
+			_originalItems = $("figure",_$element);
+
+		//hide the captions
+			$("figure figcaption",_$element).hide();
+
+		//change the opacity of each image
+		//and prepare the styels
+			_originalItems.fadeTo(0,0.5);
+			_originalItems.css("float","left");
+
+		//make an array with the size of each image
+		//and store the total width of the images
+			$("figure img",_$element).each(function(){
+				var w = $(this).width()
+				_originalItemsWidthsArray.push(w);
+				// _clonedItemsWidthsArray.push(w);
+				_originalItemsTotalWidth += w;
+				_originalItemsCount++;
+			});
+	}
+
+	function makePreItems(){
+		log("makePreItems");
+		// var nextToClone = _originalItems - _pre
+		var clonedIndex = _originalItemsCount-1;
+		log("clonedIndex " + clonedIndex);
+		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
+		log("clonedWidth " + clonedWidth);
+		var clone = $(_originalItems[clonedIndex]).clone();
+		
+		_preItems.push(clone);
+		_preItemsWidthsArray.push(clonedWidth);
+		_preItemsTotalWidth += clonedWidth;
+
+		_$movable.prepend( clone );
+		moveMovable(-clonedWidth);
+		resetMovableWidth();
+
+		_currentIndex++;
+	}
+
+	function makePostItems(){
+		log("makePostItems");
+		var tooMany = 0;
+		var nextIndex = 0;
+		while( (_originalItemsTotalWidth+_postItemsTotalWidth) < _viewportWidth){
+			tooMany++;
+			if(tooMany> 15 ) {
+				log("Too many!!!");
+				break;
+			}
+
+			if(nextIndex >= _originalItemsCount) nextIndex = 0;
+
+			clonePostItem(nextIndex);
+
+			nextIndex++;
+		}
+	}
+
+	function clonePostItem(clonedIndex){
+		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
+		var clone = $(_originalItems[clonedIndex]).clone();
+
+		_postItems.push(clone);
+		_postItemsWidthsArray.push(clonedWidth);
+		_postItemsTotalWidth += clonedWidth;
+
+		_$movable.append(clone);
+		resetMovableWidth();
+	}
+
+	function resetMovableWidth(){
+		_$movable.width(_preItemsTotalWidth+_originalItemsTotalWidth+_postItemsTotalWidth);
+	}
 
 	function addSetOnRigth(){
 		_originalItems.each(function(ix, ele){
