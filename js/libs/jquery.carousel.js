@@ -15,18 +15,23 @@ var Carousel = function(element, args){
 	var _originalItemsTotalWidth = 0; //original width of all the figures, no clones counted
 	var _originalItemsWidthsArray = [];
 	
-	var _preItems = [];
-	var _preItemsCount = 0;
-	var _preItemsTotalWidth = 0;
-	var _preItemsWidthsArray = [];
+	// var _preItems = [];
+	// var _preItemsCount = 0;
+	// var _preItemsTotalWidth = 0;
+	// var _preItemsWidthsArray = [];
 	
-	var _postItems = [];
-	var _postItemsCount = 0;
-	var _postItemsTotalWidth = 0;
-	var _postItemsWidthsArray = [];
+	// var _postItems = [];
+	// var _postItemsCount = 0;
+	// var _postItemsTotalWidth = 0;
+	// var _postItemsWidthsArray = [];
 
-	var _clonedItemsTotalWidth = 0 ; //total width of the movable area
-	var _clonedItemsWidthsArray = [];
+	// var _allItems = [];
+	// var _allItemsCount = 0;
+	var _allItemsTotalWidth = 0;
+	var _allItemsWithArray = [];
+
+	// var _clonedItemsTotalWidth = 0 ; //total width of the movable area
+	// var _clonedItemsWidthsArray = [];
 	var _currentIndex = 0;
 	var _$arrowPrevious;
 	var _$arrowNext;
@@ -63,21 +68,6 @@ var Carousel = function(element, args){
 	//clone elements on the right
 		makePostItems();
 
-	//add elements on the right as necessary
-	//there has two be two at least
-		// addSetOnRigth();
-
-	//this has to be necessary to cover the width of 2 viewports
-		// var tooMany = 0;
-		// while(_clonedItemsTotalWidth < (_viewportWidth*3) ) {
-		// 	tooMany++;
-		// 	addSetOnRigth();
-		// 	if(tooMany>40){
-		// 		log("Too many copies!!!")
-		// 		break;
-		// 	}
-		// }
-
 	//add click listener to elements
 		$("figure",_$element).click(onItemClick);
 	
@@ -93,6 +83,7 @@ var Carousel = function(element, args){
 	function processOriginalItems(){
 		//store references to the original elements
 			_originalItems = $("figure",_$element);
+			// _allItems = $("figure",_$element);
 
 		//hide the captions
 			$("figure figcaption",_$element).hide();
@@ -107,10 +98,17 @@ var Carousel = function(element, args){
 			$("figure img",_$element).each(function(){
 				var w = $(this).width()
 				_originalItemsWidthsArray.push(w);
+				_allItemsWithArray.push(w);
+				// _allItems.push(w);
 				// _clonedItemsWidthsArray.push(w);
 				_originalItemsTotalWidth += w;
+				// _allItemsTotalWidth += w;
 				_originalItemsCount++;
+				// _allItemsCount++;
 			});
+
+			_allItemsTotalWidth = _originalItemsTotalWidth;
+
 	}
 
 	function makePreItems(){
@@ -122,9 +120,14 @@ var Carousel = function(element, args){
 		log("clonedWidth " + clonedWidth);
 		var clone = $(_originalItems[clonedIndex]).clone();
 		
-		_preItems.push(clone);
-		_preItemsWidthsArray.push(clonedWidth);
-		_preItemsTotalWidth += clonedWidth;
+		// _preItems.push(clone);
+		// _preItemsWidthsArray.push(clonedWidth);
+		// _preItemsTotalWidth += clonedWidth;
+
+		// Array(_allItems).unshift(clone);
+		_allItemsWithArray.unshift(clonedWidth);
+		_allItemsTotalWidth += clonedWidth;
+		// _allItemsCount ++;
 
 		_$movable.prepend( clone );
 		moveMovable(-clonedWidth);
@@ -137,7 +140,7 @@ var Carousel = function(element, args){
 		log("makePostItems");
 		var tooMany = 0;
 		var nextIndex = 0;
-		while( (_originalItemsTotalWidth+_postItemsTotalWidth) < _viewportWidth){
+		while( (_allItemsTotalWidth) < (_viewportWidth*2) ){
 			tooMany++;
 			if(tooMany> 15 ) {
 				log("Too many!!!");
@@ -153,29 +156,39 @@ var Carousel = function(element, args){
 	}
 
 	function clonePostItem(clonedIndex){
+		log("clonePostItem " + clonedIndex);
 		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
 		var clone = $(_originalItems[clonedIndex]).clone();
 
-		_postItems.push(clone);
-		_postItemsWidthsArray.push(clonedWidth);
-		_postItemsTotalWidth += clonedWidth;
+		// log("_allItems")
+		// log(_allItems);
+
+		// _allItems.push(clone);
+		_allItemsWithArray.push(clonedWidth);
+		_allItemsTotalWidth += clonedWidth;
+		// _allItemsCount ++;
+
+		// _postItems.push(clone);
+		// _postItemsWidthsArray.push(clonedWidth);
+		// _postItemsTotalWidth += clonedWidth;
 
 		_$movable.append(clone);
 		resetMovableWidth();
 	}
 
 	function resetMovableWidth(){
-		_$movable.width(_preItemsTotalWidth+_originalItemsTotalWidth+_postItemsTotalWidth);
+		// _$movable.width(_preItemsTotalWidth+_originalItemsTotalWidth+_postItemsTotalWidth);
+		_$movable.width(_allItemsTotalWidth);
 	}
 
-	function addSetOnRigth(){
-		_originalItems.each(function(ix, ele){
-			_$movable.append( $(this).clone() );
-			var itemWidth = _originalItemsWidthsArray[ix];
-			_clonedItemsWidthsArray.push(itemWidth);
-			_clonedItemsTotalWidth += itemWidth;
-		});
-	}
+	// function addSetOnRigth(){
+	// 	_originalItems.each(function(ix, ele){
+	// 		_$movable.append( $(this).clone() );
+	// 		var itemWidth = _originalItemsWidthsArray[ix];
+	// 		_clonedItemsWidthsArray.push(itemWidth);
+	// 		_clonedItemsTotalWidth += itemWidth;
+	// 	});
+	// }
 
 	function setupArrows(){
 		_$arrowPrevious = $("<div class='arrow previous' />");
@@ -204,8 +217,10 @@ var Carousel = function(element, args){
 	}
 
 	function onItemClick(event){
+		var ix = $(this).index();
+		if(ix===_currentIndex) return;
 		//scope on this function is the clicked element
-		moveTo( $(this).index() );
+		moveTo( ix );
 	}
 
 	function movePrevious(){
@@ -233,18 +248,34 @@ var Carousel = function(element, args){
 		var indexDif = toIndex - _currentIndex;
 		log("indexDif " + indexDif);
 
-		//shift the movable to the left if necessary (when moving to previous items)
-		if(toIndex<0){
-			shiftMovableAllLeft();
-			// _currentIndex=_originalItems.length;			
-			toIndex = _currentIndex + indexDif;
+		var shifted = 0;
+
+		if(toIndex<_currentIndex){
+			shifted = shiftMovableAllLeft();
+			log("shifted " + shifted);
+			toIndex += (shifted*_originalItemsCount);
 		}
 
-		//shift the movable to the right if necessary
-		if(_currentIndex>=_originalItems.length && toIndex>_currentIndex ){
-			shiftMovableAllRight();			
-			toIndex = _currentIndex + indexDif;
+		if(toIndex>_currentIndex){
+			shifted = shiftMovableAllRight();
+			log("shifted " + shifted);
+			toIndex -= (shifted*_originalItemsCount);
 		}
+
+		log("new toIndex " + toIndex);
+
+		// //shift the movable to the left if necessary (when moving to previous items)
+		// if(toIndex<0){
+		// 	shiftMovableAllLeft();
+		// 	// _currentIndex=_originalItems.length;			
+		// 	toIndex = _currentIndex + indexDif;
+		// }
+
+		//shift the movable to the right if necessary
+		// if(_currentIndex>=_originalItems.length && toIndex>_currentIndex ){
+		// 	shiftMovableAllRight();			
+		// 	toIndex = _currentIndex + indexDif;
+		// }
 		
 		animate(_currentIndex,toIndex);
 
@@ -268,7 +299,7 @@ var Carousel = function(element, args){
 		if(fromIndex>toIndex){
 			log("Backwards");
 			for(var ix = toIndex; ix<fromIndex; ix++){
-				dif += _clonedItemsWidthsArray[ix];
+				dif += _allItemsWithArray[ix];
 			}
 			return dif;
 		}
@@ -276,7 +307,7 @@ var Carousel = function(element, args){
 		if(fromIndex<toIndex){
 			log("Forward");
 			for(var ix = fromIndex; ix<toIndex; ix++){
-				dif += _clonedItemsWidthsArray[ix];
+				dif += _allItemsWithArray[ix];
 			}
 			return -dif;
 		}
@@ -310,11 +341,16 @@ var Carousel = function(element, args){
 	}
 
 	function getMovableRight(){
-		return getMovableLeft() + _clonedItemsTotalWidth;
+		return getMovableLeft() + getMovableTotalWidth();
 	}
 
 	function setMovableLeft(left){
 		_$movable.css("left",left);
+	}
+
+	function getMovableTotalWidth(){
+		// return _preItemsTotalWidth + _originalItemsTotalWidth + _postItemsTotalWidth;
+		return _allItemsTotalWidth;
 	}
 
 	function moveMovable(dist){
@@ -322,9 +358,15 @@ var Carousel = function(element, args){
 	}
 
 	function shiftMovableAllLeft(){
+		var shifted = 0;
 		while(getMovableRight()>_viewportWidth){
-			if(!shiftMovableOneLeft()) break;
+			if( shiftMovableOneLeft() ){
+				shifted ++;
+			} else{
+				break;
+			}
 		}
+		return shifted;
 	}
 
 	function shiftMovableOneLeft(){
@@ -333,7 +375,7 @@ var Carousel = function(element, args){
 		var newCurrentIndex =_currentIndex + _originalItems.length;
 
 		var check1 = (getMovableRight()-_originalItemsTotalWidth) >= _viewportWidth;
-		var check2 = newCurrentIndex < _clonedItemsWidthsArray.length;
+		var check2 = newCurrentIndex < _allItemsWithArray.length;
 
 		if(check1 && check2){
 			moveMovable( - _originalItemsTotalWidth);
@@ -348,10 +390,16 @@ var Carousel = function(element, args){
 
 	function shiftMovableAllRight(){
 		//move the movable all the way to the extreme right
+		var shifted = 0 ;
 
 		while(getMovableLeft()<0){
-			if(!shiftMovableOneRight()) break;
+			if(shiftMovableOneRight()) {
+				shifted++;
+			}else{
+				break;
+			}
 		}
+		return shifted;
 	}
 
 	function shiftMovableOneRight(){
