@@ -62,11 +62,11 @@ var Carousel = function(element, args){
 	//store the starting width of the movable
 		// _clonedItemsTotalWidth = _originalItemsTotalWidth;
 
-	//clone one item on the left
-		makePreItems();
-
 	//clone elements on the right
 		makePostItems();
+
+	//clone one item on the left
+		makePreItems();
 
 	//add click listener to elements
 		$("figure",_$element).click(onItemClick);
