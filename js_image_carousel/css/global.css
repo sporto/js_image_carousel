@@ -1,0 +1,29 @@
+body{
+	
+}
+
+#container{
+	margin: 0 auto;
+	width: 640px;
+}
+
+.slideshow{
+	width:450px;
+	height: 200px;
+}
+
+.slideshow .arrow{
+	width:30px;
+	height:30px;
+	background-color:black;
+	position:absolute;
+	top: 40px;
+}
+
+.slideshow .previous{
+	left:0;
+}
+
+.slideshow .next{
+	right:0;
+}
