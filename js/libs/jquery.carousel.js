@@ -15,23 +15,9 @@ var Carousel = function(element, args){
 	var _originalItemsTotalWidth = 0; //original width of all the figures, no clones counted
 	var _originalItemsWidthsArray = [];
 	
-	// var _preItems = [];
-	// var _preItemsCount = 0;
-	// var _preItemsTotalWidth = 0;
-	// var _preItemsWidthsArray = [];
-	
-	// var _postItems = [];
-	// var _postItemsCount = 0;
-	// var _postItemsTotalWidth = 0;
-	// var _postItemsWidthsArray = [];
-
-	// var _allItems = [];
-	// var _allItemsCount = 0;
 	var _allItemsTotalWidth = 0;
 	var _allItemsWithArray = [];
 
-	// var _clonedItemsTotalWidth = 0 ; //total width of the movable area
-	// var _clonedItemsWidthsArray = [];
 	var _currentIndex = 0;
 	var _$arrowPrevious;
 	var _$arrowNext;
@@ -56,12 +42,9 @@ var Carousel = function(element, args){
 
 	//set up the styles of the elements
 		_$element.css("position","relative");
-		// _$element.css("overflow-x","hidden");
+		_$element.css("overflow-x","hidden");
 		_$movable.css("position","absolute");
-
-	//store the starting width of the movable
-		// _clonedItemsTotalWidth = _originalItemsTotalWidth;
-
+	
 	//clone elements on the right
 		makePostItems();
 
@@ -71,9 +54,6 @@ var Carousel = function(element, args){
 	//add click listener to elements
 		$("figure",_$element).click(onItemClick);
 	
-	//resize the container
-		// _$movable.width(_clonedItemsTotalWidth);
-
 		setupArrows();
 
 		addHighlight(_currentIndex);
@@ -83,7 +63,6 @@ var Carousel = function(element, args){
 	function processOriginalItems(){
 		//store references to the original elements
 			_originalItems = $("figure",_$element);
-			// _allItems = $("figure",_$element);
 
 		//hide the captions
 			$("figure figcaption",_$element).hide();
@@ -99,12 +78,8 @@ var Carousel = function(element, args){
 				var w = $(this).width()
 				_originalItemsWidthsArray.push(w);
 				_allItemsWithArray.push(w);
-				// _allItems.push(w);
-				// _clonedItemsWidthsArray.push(w);
 				_originalItemsTotalWidth += w;
-				// _allItemsTotalWidth += w;
 				_originalItemsCount++;
-				// _allItemsCount++;
 			});
 
 			_allItemsTotalWidth = _originalItemsTotalWidth;
@@ -120,14 +95,8 @@ var Carousel = function(element, args){
 		log("clonedWidth " + clonedWidth);
 		var clone = $(_originalItems[clonedIndex]).clone();
 		
-		// _preItems.push(clone);
-		// _preItemsWidthsArray.push(clonedWidth);
-		// _preItemsTotalWidth += clonedWidth;
-
-		// Array(_allItems).unshift(clone);
 		_allItemsWithArray.unshift(clonedWidth);
 		_allItemsTotalWidth += clonedWidth;
-		// _allItemsCount ++;
 
 		_$movable.prepend( clone );
 		moveMovable(-clonedWidth);
@@ -140,7 +109,7 @@ var Carousel = function(element, args){
 		log("makePostItems");
 		var tooMany = 0;
 		var nextIndex = 0;
-		while( (_allItemsTotalWidth) < (_viewportWidth*2) ){
+		while( (_allItemsTotalWidth) < (_viewportWidth*2.5) ){
 			tooMany++;
 			if(tooMany> 15 ) {
 				log("Too many!!!");
@@ -160,35 +129,16 @@ var Carousel = function(element, args){
 		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
 		var clone = $(_originalItems[clonedIndex]).clone();
 
-		// log("_allItems")
-		// log(_allItems);
-
-		// _allItems.push(clone);
 		_allItemsWithArray.push(clonedWidth);
 		_allItemsTotalWidth += clonedWidth;
-		// _allItemsCount ++;
-
-		// _postItems.push(clone);
-		// _postItemsWidthsArray.push(clonedWidth);
-		// _postItemsTotalWidth += clonedWidth;
 
 		_$movable.append(clone);
 		resetMovableWidth();
 	}
 
 	function resetMovableWidth(){
-		// _$movable.width(_preItemsTotalWidth+_originalItemsTotalWidth+_postItemsTotalWidth);
 		_$movable.width(_allItemsTotalWidth);
 	}
-
-	// function addSetOnRigth(){
-	// 	_originalItems.each(function(ix, ele){
-	// 		_$movable.append( $(this).clone() );
-	// 		var itemWidth = _originalItemsWidthsArray[ix];
-	// 		_clonedItemsWidthsArray.push(itemWidth);
-	// 		_clonedItemsTotalWidth += itemWidth;
-	// 	});
-	// }
 
 	function setupArrows(){
 		_$arrowPrevious = $("<div class='arrow previous' />");
@@ -198,14 +148,6 @@ var Carousel = function(element, args){
 
 		_$arrowPrevious.click(onArrowPrevious);
 		_$arrowNext.click(onArrowNext);
-
-		// $(".arrow", _$element).css("position","absolute");		
-
-
-		// log(_$arrowNext)
-		// _$element.append("<div class='arrowPrevious' />");
-		// _$element.append("<div class='arrowNext' />");
-		// _$arrowPrevious = $(".arrowPrevious")
 	}
 
 	function onArrowPrevious(event){
@@ -217,9 +159,9 @@ var Carousel = function(element, args){
 	}
 
 	function onItemClick(event){
+		//scope on this function is the clicked element
 		var ix = $(this).index();
 		if(ix===_currentIndex) return;
-		//scope on this function is the clicked element
 		moveTo( ix );
 	}
 
@@ -237,7 +179,6 @@ var Carousel = function(element, args){
 
 	function moveTo(toIndex){
 		log( "-------moveTo " + toIndex );
-		// log("_clickEnable" + _clickEnable);
 		log("_currentIndex " + _currentIndex);
 
 		_clickEnable = false;
@@ -263,19 +204,6 @@ var Carousel = function(element, args){
 		}
 
 		log("new toIndex " + toIndex);
-
-		// //shift the movable to the left if necessary (when moving to previous items)
-		// if(toIndex<0){
-		// 	shiftMovableAllLeft();
-		// 	// _currentIndex=_originalItems.length;			
-		// 	toIndex = _currentIndex + indexDif;
-		// }
-
-		//shift the movable to the right if necessary
-		// if(_currentIndex>=_originalItems.length && toIndex>_currentIndex ){
-		// 	shiftMovableAllRight();			
-		// 	toIndex = _currentIndex + indexDif;
-		// }
 		
 		animate(_currentIndex,toIndex);
 
@@ -318,7 +246,6 @@ var Carousel = function(element, args){
 		log("fromIndex " + fromIndex);
 		log("toIndex" + toIndex);
 
-		// log("difference " + getDifference(fromIndex, toIndex));
 		var dif = getDifference(fromIndex, toIndex);
 		log("dif " + dif);
 
@@ -333,7 +260,17 @@ var Carousel = function(element, args){
 	}
 
 	function animateDone(){
+		log("animateDone");
 		_clickEnable = true;
+		//show the text
+		showItemCaption();
+	}
+
+	function showItemCaption(){
+		log("showItemCaption");
+		var ele = _originalItems[_currentIndex];
+		//log( $("figcaption", ele).html() );
+		// $("figcaption",ele).show();
 	}
 
 	function getMovableLeft(){
@@ -349,7 +286,6 @@ var Carousel = function(element, args){
 	}
 
 	function getMovableTotalWidth(){
-		// return _preItemsTotalWidth + _originalItemsTotalWidth + _postItemsTotalWidth;
 		return _allItemsTotalWidth;
 	}
 
@@ -359,12 +295,9 @@ var Carousel = function(element, args){
 
 	function shiftMovableAllLeft(){
 		var shifted = 0;
-		while(getMovableRight()>_viewportWidth){
-			if( shiftMovableOneLeft() ){
-				shifted ++;
-			} else{
-				break;
-			}
+
+		while( shiftMovableOneLeft() ){
+			shifted ++;
 		}
 		return shifted;
 	}
@@ -392,13 +325,10 @@ var Carousel = function(element, args){
 		//move the movable all the way to the extreme right
 		var shifted = 0 ;
 
-		while(getMovableLeft()<0){
-			if(shiftMovableOneRight()) {
-				shifted++;
-			}else{
-				break;
-			}
+		while( shiftMovableOneRight() ){
+			shifted++;
 		}
+
 		return shifted;
 	}
 
@@ -406,11 +336,14 @@ var Carousel = function(element, args){
 		log("shiftMovableOneRight");
 
 		var newCurrentIndex =_currentIndex - _originalItems.length;
+		log("newCurrentIndex " + newCurrentIndex);
 
-		var check1 = getMovableLeft()<0;//there are no items on the left
+		// var check1 = getMovableLeft()<0;//there are no items on the left
 		var check2 = newCurrentIndex>=0;
 
-		if(check1 && check2 ){
+		log("check " + check2);
+
+		if( check2 ){
 			moveMovable(_originalItemsTotalWidth);
 			_currentIndex = newCurrentIndex;
 			log("new currentIndex " + _currentIndex);
@@ -428,10 +361,9 @@ var Carousel = function(element, args){
 
 	function removeHighlight(index){
 		$("figure",_$element).eq(index).fadeTo(0,.5);
+		//hide caption
+		$("figcaption",_$element).eq(index).hide();
 	}
-
-
-	// function reset
 
 	function log(msg){
 		if(!_debug) return;
