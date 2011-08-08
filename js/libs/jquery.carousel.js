@@ -24,6 +24,9 @@ var Carousel = function(element, args){
 	var _clickEnable=true;
 	var _speed = 1000;
 	var _debug = false;
+	
+	var _captions = [];
+	var _$captionElement;
 
 	if(args.speed) _speed = args.speed;
 	if(args.debug) _debug = args.debug;
@@ -55,17 +58,26 @@ var Carousel = function(element, args){
 		$("figure",_$element).click(onItemClick);
 	
 		setupArrows();
+		setupCaption();
 
-		addHighlight(_currentIndex);
+		addCurrentHighlight();
+		showCurrentCaption();
 
 	}//init
 
+
 	function processOriginalItems(){
+		log("processOriginalItems");
+
 		//store references to the original elements
 			_originalItems = $("figure",_$element);
 
-		//hide the captions
-			$("figure figcaption",_$element).hide();
+	//store and hide the captions
+		$("figure", _$element).each(function(ix, ele){
+			_captions[ix] =  $("figcaption", this) ;
+			$("figcaption",this).hide();
+		});
+		log(_captions);
 
 		//change the opacity of each image
 		//and prepare the styels
@@ -150,6 +162,11 @@ var Carousel = function(element, args){
 		_$arrowNext.click(onArrowNext);
 	}
 
+	function setupCaption(){
+		_$captionElement = $("<div class='caption' />");
+		_$captionElement.appendTo(_$element);
+	}
+
 	function onArrowPrevious(event){
 		if(_clickEnable) movePrevious();
 	}
@@ -161,7 +178,6 @@ var Carousel = function(element, args){
 	function onItemClick(event){
 		//scope on this function is the clicked element
 		var ix = $(this).index();
-		if(ix===_currentIndex) return;
 		moveTo( ix );
 	}
 
@@ -181,8 +197,11 @@ var Carousel = function(element, args){
 		log( "-------moveTo " + toIndex );
 		log("_currentIndex " + _currentIndex);
 
+		if(toIndex===_currentIndex) return;
+
 		_clickEnable = false;
 		removeHighlight(_currentIndex);
+		hideCaption();
 		
 		if(toIndex===_currentIndex) return;
 
@@ -208,7 +227,7 @@ var Carousel = function(element, args){
 		animate(_currentIndex,toIndex);
 
 		_currentIndex = toIndex;
-		addHighlight(_currentIndex);
+		addCurrentHighlight();
 	}
 
 	function getDifference(fromIndex,toIndex){
@@ -264,6 +283,7 @@ var Carousel = function(element, args){
 		_clickEnable = true;
 		//show the text
 		showItemCaption();
+		showCurrentCaption();
 	}
 
 	function showItemCaption(){
@@ -355,6 +375,10 @@ var Carousel = function(element, args){
 
 	}
 
+	function addCurrentHighlight(){
+		addHighlight(_currentIndex);
+	}
+
 	function addHighlight(index){
 		$("figure",_$element).eq(index).fadeTo(0,1);
 	}
@@ -363,6 +387,31 @@ var Carousel = function(element, args){
 		$("figure",_$element).eq(index).fadeTo(0,.5);
 		//hide caption
 		$("figcaption",_$element).eq(index).hide();
+	}
+
+	function showCurrentCaption(){
+		showCaption(_currentIndex);
+	}
+
+	function showCaption(index){
+		log("showCaption " + index);
+		index = getCompressedIndex(index);
+//		log( _captions[index] );
+		var cap = _captions[index];
+		cap.show();
+		_$captionElement.html( cap );
+		_$captionElement.fadeIn(500);
+
+	}	
+
+	function hideCaption(){
+		_$captionElement.hide();
+	}
+
+		function getCompressedIndex(index){
+		//given any image index
+		//return the index that corresponds to this image in the array of original items
+		return index%_originalItems.length;
 	}
 
 	function log(msg){
