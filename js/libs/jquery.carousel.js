@@ -57,8 +57,8 @@ var Carousel = function(element, args){
 	//add click listener to elements
 		$("figure",_$element).click(onItemClick);
 	
-		setupArrows();
 		setupCaption();
+		setupArrows();//put arrows on top of caption		
 
 		addCurrentHighlight();
 		showCurrentCaption();
