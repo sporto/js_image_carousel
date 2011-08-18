@@ -7,12 +7,12 @@ body{
 	width: 640px;
 }
 
-.slideshow{
+.carousel{
 	width:450px;
 	height: 200px;
 }
 
-.slideshow .arrow{
+.carousel .arrow{
 	width:30px;
 	height:30px;
 	background-color:black;
@@ -20,10 +20,18 @@ body{
 	top: 40px;
 }
 
-.slideshow .previous{
+.carousel .previous{
 	left:0;
 }
 
-.slideshow .next{
+.carousel .next{
 	right:0;
+}
+
+.carousel .caption{
+	background-color: black;	
+	position: absolute;
+	top:  80px;
+	left: 0px;
+	color: white;
 }

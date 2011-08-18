@@ -23,7 +23,7 @@
 
   	<h1>Images are exactly the same size as the viewport</h1>
     
-    <div id="carousel1" class="slideshow">
+    <div id="carousel1" class="carousel">
     	<figure>
     		<img src="images/450x100a.gif" />
     		<figcaption>
@@ -60,7 +60,7 @@
 
     <h1>Images are smaller than the viewport but they extend beyond the viewport</h1>
 
-    <div  id="carousel2" class="slideshow">
+    <div  id="carousel2" class="carousel">
     	<figure>
     		<img src="images/100x100CB0713.gif" />
     		<figcaption>
@@ -97,7 +97,7 @@
 
     <h1>Images are smaller than the viewport and they don't extend beyond the viewport</h1>
 
-    <div  id="carousel3" class="slideshow">
+    <div  id="carousel3" class="carousel">
     	<figure>
     		<img src="http://placehold.it/100x100/CB0713" />
     		<figcaption>
@@ -124,7 +124,7 @@
 
     <h1>Images are larger than the viewport </h1>
 
-    <div id="carousel4" class="slideshow">
+    <div id="carousel4" class="carousel">
     	<figure>
     		<img src="http://placehold.it/600x100/CB0713" />
     		<figcaption>
@@ -154,11 +154,12 @@
 
 
   <script type="text/javascript">
-  	var carousel1 = Carousel($("#carousel1"),{speed:100, debug:false});
-  	var carousel2 = Carousel($("#carousel2"),{speed:500, debug:true});
-  	var carousel3 = Carousel($("#carousel3"),{speed:300, debug:false});
-  	var carousel4 = Carousel($("#carousel4"),{speed:300, debug:false});
-
+  	$(function(){
+	  	var carousel1 = Carousel($("#carousel1"),{speed:100, debug:false});
+	  	var carousel2 = Carousel($("#carousel2"),{speed:500, debug:true});
+	  	var carousel3 = Carousel($("#carousel3"),{speed:300, debug:false});
+	  	var carousel4 = Carousel($("#carousel4"),{speed:300, debug:false});
+		});
   </script>
 
 
