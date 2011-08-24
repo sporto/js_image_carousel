@@ -27,6 +27,7 @@ var Carousel = function(element, args){
 	
 	var _captions = [];
 	var _$captionElement;
+	var _captionOffset = 0 ; //difference between the current index and the corresponding caption
 
 	if(args.speed) _speed = args.speed;
 	if(args.debug) _debug = args.debug;
@@ -34,6 +35,8 @@ var Carousel = function(element, args){
 	init();
 
 	function init(){
+		log("init");
+		
 	//store the width of the container
 		_viewportWidth = _$element.width();
 	
@@ -115,6 +118,7 @@ var Carousel = function(element, args){
 		resetMovableWidth();
 
 		_currentIndex++;
+		_captionOffset++;
 	}
 
 	function makePostItems(){
@@ -376,10 +380,12 @@ var Carousel = function(element, args){
 	}
 
 	function addCurrentHighlight(){
+		log("addCurrentHighlight " + _currentIndex);
 		addHighlight(_currentIndex);
 	}
 
 	function addHighlight(index){
+		log("addHighlight " + index);
 		$("figure",_$element).eq(index).fadeTo(0,1);
 	}
 
@@ -390,7 +396,8 @@ var Carousel = function(element, args){
 	}
 
 	function showCurrentCaption(){
-		showCaption(_currentIndex);
+		log("showCurrentCaption " + _currentIndex);
+		showCaption(_currentIndex-_captionOffset);
 	}
 
 	function showCaption(index){
