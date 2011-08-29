@@ -64,4 +64,16 @@ The script will also create a caption element <div class="caption">...</div>. Yo
 		color: white;
 	}
 
-	
+##Options
+
+The following options are available:
+
+option 				default			description
+speed					1000				Speed of transition in milliseconds
+showMultiple	true				Show multiple images at the same time in the viewport (Only relevant if images are smaller than the viewport)
+centered			true				Center the image in the viewport (Only relevant if showMultiple is false)
+debug					false				Debug mode, show log messages
+
+##Acknowledgements
+
+Thanks to [SCT](http://www.sct.com.au/) for the original idea and the time for improvements and bug fixing.

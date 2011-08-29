@@ -1,7 +1,8 @@
 /********************************************************************************************
 * Author: Sebastian Porto
 * August 2011
-* v.0.3
+* v.0.4
+* Source code is in https://github.com/sporto/js_image_carousel
 * ******************************************************************************************/
 
 var Carousel = function(element, args){
@@ -118,10 +119,12 @@ var Carousel = function(element, args){
 			if(!_showMultiple){
 				$item.width(_viewportWidth);
 				if(_centered){
-					//var left = (_viewportWidth - itemWidth) /2;
+					// var left = (_viewportWidth - itemWidth) /2;
 					//$item.css("left",left);
-					//$item.css("text-align","center");
+					$item.css("text-align","center");
+
 				}
+				itemWidth = _viewportWidth;
 			}
 			
 		//make an array with the size of each image
