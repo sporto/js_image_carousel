@@ -11,6 +11,9 @@ var Carousel = function(element, args){
 	var _$movable;
 	var _viewportWidth = 0; //the width of the viewport
 	
+	var _showMultiple = (typeof(args.showMultiple)==='undefined') ? true : args.showMultiple; //show multiple images in the viewport
+	var _centered = (typeof(args.centered)==='undefined') ? true : args.centered;//only relevant if _showMultiple is false
+		
 	var _originalItems = [];//references to the original figures, no clones here
 	var _originalItemsCount = 0;
 	var _originalItemsTotalWidth = 0; //original width of all the figures, no clones counted
@@ -36,8 +39,11 @@ var Carousel = function(element, args){
 	init();
 	
 	function init(){
+		log("init");
 		//all image must be loaded
 		$("figure", _$element).hide();
+		
+		log("_showMultiple = " + _showMultiple);
 		
 		$(window).load(
 			function(){
@@ -46,7 +52,7 @@ var Carousel = function(element, args){
 	}
 
 	function initWithImages(){
-		log("init");
+		log("initWithImages");
 		
 	//store the width of the container
 		_viewportWidth = _$element.width();
@@ -85,33 +91,48 @@ var Carousel = function(element, args){
 
 		//store references to the original elements
 			_originalItems = $("figure",_$element);
-
-	//store and hide the captions
-		$("figure", _$element).each(function(ix, ele){
-			_captions[ix] =  $("figcaption", this) ;
-			$("figcaption",this).hide();
-		});
-		log(_captions);
+			
+		for(var i=0, len = _originalItems.length; i<len; i++){
+			processOriginalItem(i);
+		}
 
 		//change the opacity of each image
-		//and prepare the styels
+		//and prepare the styles
 			_originalItems.fadeTo(0,0.5);
 			_originalItems.css("float","left");
 
+			_allItemsTotalWidth = _originalItemsTotalWidth;
+	}
+	
+	function processOriginalItem(ix){
+		log("processOriginalItem");
+		var $item = $("figure", _$element).eq(ix);
+		var itemWidth = $item.width();
+		
+		//store and hide the captions
+		var $caption = $("figcaption", $item);
+		_captions[ix] =  $caption ;
+		$caption.hide();
+		
+		//if not multiple images then change the width of each figure to take all the viewport width
+			if(!_showMultiple){
+				$item.width(_viewportWidth);
+				if(_centered){
+					//var left = (_viewportWidth - itemWidth) /2;
+					//$item.css("left",left);
+					//$item.css("text-align","center");
+				}
+			}
+			
 		//make an array with the size of each image
 		//and store the total width of the images
-			$("figure img",_$element).each(function(){
-				var w = $(this).width();
-				log("w = " + w);
-				_originalItemsWidthsArray.push(w);
-				_allItemsWithArray.push(w);
-				_originalItemsTotalWidth += w;
-				_originalItemsCount++;
-			});
-
-			_allItemsTotalWidth = _originalItemsTotalWidth;
-
+		
+		_originalItemsWidthsArray.push(itemWidth);
+		_allItemsWithArray.push(itemWidth);
+		_originalItemsTotalWidth += itemWidth;
+		_originalItemsCount++;
 	}
+	
 
 	function makePreItems(){
 		log("makePreItems");
