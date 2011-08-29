@@ -1,6 +1,7 @@
 /********************************************************************************************
 * Author: Sebastian Porto
 * August 2011
+* v.0.3
 * ******************************************************************************************/
 
 var Carousel = function(element, args){
@@ -33,8 +34,18 @@ var Carousel = function(element, args){
 	if(args.debug) _debug = args.debug;
 
 	init();
-
+	
 	function init(){
+		//all image must be loaded
+		$("figure", _$element).hide();
+		
+		$(window).load(
+			function(){
+				initWithImages();
+		});
+	}
+
+	function initWithImages(){
 		log("init");
 		
 	//store the width of the container
@@ -90,7 +101,8 @@ var Carousel = function(element, args){
 		//make an array with the size of each image
 		//and store the total width of the images
 			$("figure img",_$element).each(function(){
-				var w = $(this).width()
+				var w = $(this).width();
+				log("w = " + w);
 				_originalItemsWidthsArray.push(w);
 				_allItemsWithArray.push(w);
 				_originalItemsTotalWidth += w;
@@ -106,7 +118,7 @@ var Carousel = function(element, args){
 		// var nextToClone = _originalItems - _pre
 		var clonedIndex = _originalItemsCount-1;
 		log("clonedIndex " + clonedIndex);
-		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
+		var clonedWidth = _originalItemsWidthsArray[clonedIndex];		
 		log("clonedWidth " + clonedWidth);
 		var clone = $(_originalItems[clonedIndex]).clone();
 		
@@ -131,11 +143,8 @@ var Carousel = function(element, args){
 				log("Too many!!!");
 				break;
 			}
-
 			if(nextIndex >= _originalItemsCount) nextIndex = 0;
-
 			clonePostItem(nextIndex);
-
 			nextIndex++;
 		}
 	}
@@ -143,6 +152,7 @@ var Carousel = function(element, args){
 	function clonePostItem(clonedIndex){
 		log("clonePostItem " + clonedIndex);
 		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
+		log("clonedWidth " + clonedWidth);
 		var clone = $(_originalItems[clonedIndex]).clone();
 
 		_allItemsWithArray.push(clonedWidth);
