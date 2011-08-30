@@ -43,13 +43,13 @@ var Carousel = function(element, args){
 		log("init");
 		//all image must be loaded
 		$("figure", _$element).hide();
-		
-		log("_showMultiple = " + _showMultiple);
-		
+
+		//wait for all the images to load
 		$(window).load(
 			function(){
 				initWithImages();
 		});
+
 	}
 
 	function initWithImages(){
@@ -108,21 +108,26 @@ var Carousel = function(element, args){
 	function processOriginalItem(ix){
 		log("processOriginalItem");
 		var $item = $("figure", _$element).eq(ix);
-		var itemWidth = $item.width();
+		//log($item);
+		//var $image = $("img",$item);
+		//log($image);
+		//log($image.get(0));
+		//var itemWidth = $image.outerWidth();
+		//var itemWidth = $image.get(0).clientWidth;
+
 		
 		//store and hide the captions
 		var $caption = $("figcaption", $item);
 		_captions[ix] =  $caption ;
 		$caption.hide();
+
+		var itemWidth = $item.width();
 		
 		//if not multiple images then change the width of each figure to take all the viewport width
 			if(!_showMultiple){
 				$item.width(_viewportWidth);
 				if(_centered){
-					// var left = (_viewportWidth - itemWidth) /2;
-					//$item.css("left",left);
 					$item.css("text-align","center");
-
 				}
 				itemWidth = _viewportWidth;
 			}
@@ -142,7 +147,7 @@ var Carousel = function(element, args){
 		// var nextToClone = _originalItems - _pre
 		var clonedIndex = _originalItemsCount-1;
 		log("clonedIndex " + clonedIndex);
-		var clonedWidth = _originalItemsWidthsArray[clonedIndex];		
+		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
 		log("clonedWidth " + clonedWidth);
 		var clone = $(_originalItems[clonedIndex]).clone();
 		
@@ -151,6 +156,7 @@ var Carousel = function(element, args){
 
 		_$movable.prepend( clone );
 		moveMovable(-clonedWidth);
+		//log(getMovableLeft());
 		resetMovableWidth();
 
 		_currentIndex++;
@@ -187,6 +193,7 @@ var Carousel = function(element, args){
 	}
 
 	function resetMovableWidth(){
+		log("resetMovableWidth");
 		_$movable.width(_allItemsTotalWidth);
 	}
 
@@ -322,6 +329,7 @@ var Carousel = function(element, args){
 		//show the text
 		showItemCaption();
 		showCurrentCaption();
+		resetMovablePosition();
 	}
 
 	function showItemCaption(){
@@ -348,7 +356,20 @@ var Carousel = function(element, args){
 	}
 
 	function moveMovable(dist){
+		log("moveMovable " + dist);
 		setMovableLeft(getMovableLeft() + dist);
+	}
+
+	function resetMovablePosition(){
+		//make sure that the movable is where it needs to be
+		log("resetMovablePosition");
+		log(_currentIndex);
+		var le = 0;
+		for(var i=0; i<_currentIndex; i++){
+			le += _allItemsWithArray[i];
+		}
+		log(-le);
+		setMovableLeft(-le);
 	}
 
 	function shiftMovableAllLeft(){
@@ -437,7 +458,6 @@ var Carousel = function(element, args){
 	function showCaption(index){
 		log("showCaption " + index);
 		index = getCompressedIndex(index);
-//		log( _captions[index] );
 		var cap = _captions[index];
 		cap.show();
 		_$captionElement.html( cap );
@@ -449,8 +469,9 @@ var Carousel = function(element, args){
 		_$captionElement.hide();
 	}
 
-		function getCompressedIndex(index){
+	function getCompressedIndex(index){
 		//given any image index
+		if(index<0) return _originalItems.length-1;
 		//return the index that corresponds to this image in the array of original items
 		return index%_originalItems.length;
 	}
@@ -458,6 +479,7 @@ var Carousel = function(element, args){
 	function log(msg){
 		if(!_debug) return;
 		if(console.log) console.log(msg);
+		//try { console.log(s) } catch (e) {  }
 	}
 
 };

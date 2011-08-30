@@ -13,6 +13,7 @@
 
   <link rel="stylesheet" href="css/reset.css?v=2">
   <link rel="stylesheet" href="css/global.css?v=2">
+  <script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script>
   <script src="js/libs/modernizr-1.7.min.js"></script>
 
 </head>
@@ -20,8 +21,47 @@
 <body>
 
   <div id="container">
+
+  	<h1>Only one image displayed not centered</h1>
+  	
+		<div  id="carousel6" class="carousel">
+			<figure>
+				<img src="images/100x100CB0713.gif" width="100" height="100" />
+				<figcaption>
+					0 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+				</figcaption>
+			</figure>
+			<figure>
+				<img src="images/50x100FE3D18.gif" width="50" height="100" />
+				<figcaption>
+					1 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+				</figcaption>
+			</figure>
+			<figure>
+				<img src="images/80x100F7BC05.gif" width="80" height="100" />
+				<figcaption>
+					3 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+				</figcaption>
+			</figure>
+			<figure>
+				<img src="images/100x10000BDB7.gif" width="100" height="100" />
+				<figcaption>
+					4 Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+				</figcaption>
+			</figure>
+			<figure>
+				<img src="images/150x1002C1620.gif" width="150" height="100" />
+				<figcaption>
+					5 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+				</figcaption>
+			</figure>
+		</div>  
+
+		<div style="clear:both;"></div>
+
+
   
-  	<h1>Only one image displayed</h1>
+  	<h1>Only one image displayed centered</h1>
   	
 	    <div  id="carousel5" class="carousel">
 	    	<figure>
@@ -193,11 +233,13 @@
 
   <script type="text/javascript">
   	$(function(){
-	  	var carousel1 = Carousel($("#carousel1"),{speed:100, debug:false});
+	  	var carousel1 = Carousel($("#carousel1"),{speed:100, debug:true});
 	  	var carousel2 = Carousel($("#carousel2"),{speed:500, debug:false});
 	  	var carousel3 = Carousel($("#carousel3"),{speed:300, debug:false});
 	  	var carousel4 = Carousel($("#carousel4"),{speed:300, debug:false});
 	  	var carousel5 = Carousel($("#carousel5"),{speed:300, debug:true, showMultiple:false, centered:true});
+	  	var carousel6 = Carousel($("#carousel6"),{speed:300, debug:true, showMultiple:false, centered:false});
+
 		});
   </script>
 
