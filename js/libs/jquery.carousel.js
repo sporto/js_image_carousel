@@ -1,14 +1,16 @@
 /********************************************************************************************
 * Author: Sebastian Porto
 * August 2011
-* v.0.4
+* v.0.5.0
 * Source code is in https://github.com/sporto/js_image_carousel
 * ******************************************************************************************/
 
 var Carousel = function(element, args){
 	var _that = this;
 	var _$element = element;
+	var _$figures;
 	// var _element = element.get();//store the DOM element
+	var _$viewport;
 	var _$movable;
 	var _viewportWidth = 0; //the width of the viewport
 	
@@ -41,15 +43,46 @@ var Carousel = function(element, args){
 	
 	function init(){
 		log("init");
+		//cache images array
+		_$figures = $("figure", _$element);
 		//all image must be loaded
-		$("figure", _$element).hide();
-
+		_$figures.hide();
+		//check for all the images to load
+		waitForImages();
 		//wait for all the images to load
-		$(window).load(
+		// $(window).load(
+		// 	function(){
+		// 		initWithImages();
+		// });
+	}
+
+	function waitForImages(){
+		log("waitForImages");
+
+		 $(window).load(
 			function(){
 				initWithImages();
 		});
 
+		/*
+		var $images = $("img", _$element);
+		var len = $images.length;
+		var loaded = 0;
+		for(var a=0; a<len; a++){
+			//var image = new Image;
+			var image = $images[a];
+			//log(image);
+			var src = $(image).attr("src");
+			log(src);
+			image.onload=function(){
+				log(this.complete);
+				log($(this).width() );
+				loaded++;
+				//if(loaded===len) initWithImages();
+			}
+			image.src = src;
+		}
+		*/
 	}
 
 	function initWithImages(){
@@ -61,12 +94,15 @@ var Carousel = function(element, args){
 	//get all the figures and wrap them in a container
 		$("figure",_$element).wrapAll("<div class='movable' />");
 		_$movable = $(".movable",_$element);
+		_$movable.wrap("<div class='viewport' />");
+		_$viewport = $(".viewport",_$element);
+
 
 	processOriginalItems();
 
 	//set up the styles of the elements
 		_$element.css("position","relative");
-		_$element.css("overflow-x","hidden");
+		_$viewport.css("position","relative").css("overflow-x","hidden").css("width",_$element.width()).css("height",_$element.height() );
 		_$movable.css("position","absolute");
 	
 	//clone elements on the right
@@ -107,14 +143,18 @@ var Carousel = function(element, args){
 	
 	function processOriginalItem(ix){
 		log("processOriginalItem");
-		var $item = $("figure", _$element).eq(ix);
+		var $item = _$figures.eq(ix);
 		//log($item);
-		//var $image = $("img",$item);
+		var $image = $("img",$item);
 		//log($image);
 		//log($image.get(0));
 		//var itemWidth = $image.outerWidth();
 		//var itemWidth = $image.get(0).clientWidth;
 
+		//log("$item.width() " + $item.width());
+		//log("$image.outerWidth() " + $image.outerWidth());
+		//log("$image.get(0).clientWidth " + $image.get(0).clientWidth );
+		//log("$image.get(0).offsetWidth " + $image.get(0).offsetWidth );
 		
 		//store and hide the captions
 		var $caption = $("figcaption", $item);
@@ -122,6 +162,13 @@ var Carousel = function(element, args){
 		$caption.hide();
 
 		var itemWidth = $item.width();
+
+		if(itemWidth===0){
+			log("ERROR Could not get the width of image");
+			//provide a fallback here
+			itemWidth = _$element.width();
+		}
+		log("itemWidth = " + itemWidth);
 		
 		//if not multiple images then change the width of each figure to take all the viewport width
 			if(!_showMultiple){
@@ -192,6 +239,11 @@ var Carousel = function(element, args){
 		resetMovableWidth();
 	}
 
+	function rebuildWidths(){
+		//_allItemsTotalWidth
+		//_allItemsWithArray
+	}
+
 	function resetMovableWidth(){
 		log("resetMovableWidth");
 		_$movable.width(_allItemsTotalWidth);
@@ -241,6 +293,10 @@ var Carousel = function(element, args){
 	function moveTo(toIndex){
 		log( "-------moveTo " + toIndex );
 		log("_currentIndex " + _currentIndex);
+		log("_allItemsTotalWidth = " + _allItemsTotalWidth);
+		if(_allItemsTotalWidth===0){
+			rebuildWidths();
+		}
 
 		if(toIndex===_currentIndex) return;
 
@@ -478,8 +534,7 @@ var Carousel = function(element, args){
 
 	function log(msg){
 		if(!_debug) return;
-		if(console.log) console.log(msg);
-		//try { console.log(s) } catch (e) {  }
+		if(window.log) window.log(msg);
 	}
 
 };

@@ -32,6 +32,17 @@ An image carousel using jQuery
 	  	var carousel1 = Carousel($("#carousel1"),{speed:100, debug:false});
 		});
 	</script>
+
+###Added elements
+The script will wrap the <figures> around two divs:
+
+	<div id="carousel1" class="carousel">
+		<div class="viewport">
+			<div class="movable">
+				<figure ...>
+			</div>
+		</div>
+	</div>
 	
 ###Arrow elements
 The script will create a couple of arrow elements for you. i.e. <div class="arrow next"></div>. You will need to style this element in CSS. For example:
@@ -79,6 +90,11 @@ Center the image in the viewport (Only relevant if showMultiple is false)
 
 **debug** (false)
 Debug mode, show log messages
+
+##Changelog
+
+v.0.5
+Added a 'viewport' element around 'movable'
 
 ##Acknowledgements
 
