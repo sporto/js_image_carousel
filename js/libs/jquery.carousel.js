@@ -1,7 +1,7 @@
 /********************************************************************************************
 * Author: Sebastian Porto
 * August 2011
-* v.0.5.0
+* v.0.5.1
 * Source code is in https://github.com/sporto/js_image_carousel
 * ******************************************************************************************/
 
@@ -188,7 +188,6 @@ var Carousel = function(element, args){
 		_originalItemsCount++;
 	}
 	
-
 	function makePreItems(){
 		log("makePreItems");
 		// var nextToClone = _originalItems - _pre
@@ -250,13 +249,15 @@ var Carousel = function(element, args){
 	}
 
 	function setupArrows(){
-		_$arrowPrevious = $("<div class='arrow previous' />");
-		_$arrowNext = $("<div class='arrow next' />");
-		_$arrowPrevious.appendTo(_$element);
-		_$arrowNext.appendTo(_$element);
+		if(_originalItemsCount.length>1){
+			_$arrowPrevious = $("<div class='arrow previous' />");
+			_$arrowNext = $("<div class='arrow next' />");
+			_$arrowPrevious.appendTo(_$element);
+			_$arrowNext.appendTo(_$element);
 
-		_$arrowPrevious.click(onArrowPrevious);
-		_$arrowNext.click(onArrowNext);
+			_$arrowPrevious.click(onArrowPrevious);
+			_$arrowNext.click(onArrowNext);
+		}
 	}
 
 	function setupCaption(){
