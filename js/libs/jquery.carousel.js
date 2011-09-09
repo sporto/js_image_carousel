@@ -249,7 +249,7 @@ var Carousel = function(element, args){
 	}
 
 	function setupArrows(){
-		if(_originalItemsCount.length>1){
+		if(_originalItemsCount>1){
 			_$arrowPrevious = $("<div class='arrow previous' />");
 			_$arrowNext = $("<div class='arrow next' />");
 			_$arrowPrevious.appendTo(_$element);
