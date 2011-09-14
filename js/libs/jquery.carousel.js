@@ -1,7 +1,7 @@
 /********************************************************************************************
 * Author: Sebastian Porto
 * August 2011
-* v.0.5.1
+* v.0.5.2
 * Source code is in https://github.com/sporto/js_image_carousel
 * ******************************************************************************************/
 
@@ -249,7 +249,7 @@ var Carousel = function(element, args){
 	}
 
 	function setupArrows(){
-		if(_originalItemsCount>1){
+		if(_originalItemsCount > 1){
 			_$arrowPrevious = $("<div class='arrow previous' />");
 			_$arrowNext = $("<div class='arrow next' />");
 			_$arrowPrevious.appendTo(_$element);
@@ -384,18 +384,11 @@ var Carousel = function(element, args){
 		log("animateDone");
 		_clickEnable = true;
 		//show the text
-		showItemCaption();
+		//showItemCaption();
 		showCurrentCaption();
 		resetMovablePosition();
 	}
-
-	function showItemCaption(){
-		log("showItemCaption");
-		var ele = _originalItems[_currentIndex];
-		//log( $("figcaption", ele).html() );
-		// $("figcaption",ele).show();
-	}
-
+	
 	function getMovableLeft(){
 		return _$movable.position().left;
 	}
@@ -518,8 +511,8 @@ var Carousel = function(element, args){
 		var cap = _captions[index];
 		cap.show();
 		_$captionElement.html( cap );
+		_$captionElement.find("figcaption").css("display","block");
 		_$captionElement.fadeIn(500);
-
 	}	
 
 	function hideCaption(){
