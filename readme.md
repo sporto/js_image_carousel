@@ -91,7 +91,16 @@ Center the image in the viewport (Only relevant if showMultiple is false)
 **debug** (false)
 Debug mode, show log messages
 
+**btnPrevious** (null)
+Optional reference to a jquery element to be used as previous button
+
+** btnNext** (null)
+Optional reference to a jquery element to be used as next button
+
 ##Changelog
+
+v.0.5.3
+Extra arguments added: btnPrevious and btnNext
 
 v.0.5
 Added a 'viewport' element around 'movable'
