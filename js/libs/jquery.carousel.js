@@ -1,22 +1,24 @@
 /********************************************************************************************
 * Author: Sebastian Porto
 * August 2011
-* v.0.5.3
+* v.0.6.0
 * Source code is in https://github.com/sporto/js_image_carousel
 * ******************************************************************************************/
 
 var Carousel = function(element, args){
 	var _that = this;
 	var _$element = element;
-	var _$figures;
+	//var _$figures;
 	// var _element = element.get();//store the DOM element
 	var _$viewport;
 	var _$movable;
 	var _viewportWidth = 0; //the width of the viewport
+	var _viewportHeight = 0;
 	
 	var _showMultiple = (typeof(args.showMultiple)==='undefined') ? true : args.showMultiple; //show multiple images in the viewport
 	var _centered = (typeof(args.centered)==='undefined') ? true : args.centered;//only relevant if _showMultiple is false
 		
+	var _imagesLoaded = 0;
 	var _originalItems = [];//references to the original figures, no clones here
 	var _originalItemsCount = 0;
 	var _originalItemsTotalWidth = 0; //original width of all the figures, no clones counted
@@ -28,83 +30,111 @@ var Carousel = function(element, args){
 	var _currentIndex = 0;
 	var _$arrowPrevious;
 	var _$arrowNext;
+	var _$counterElement;
 	var _clickEnable=true;
 	var _speed = 1000;
 	var _debug = false;
 	
 	var _captions = [];
 	var _$captionElement;
-	var _captionOffset = 0 ; //difference between the current index and the corresponding caption
+	var _preItemsOffset = 0 ; //difference between the first item and the original first item
 
 	if(args.speed) _speed = args.speed;
 	if(args.debug) _debug = args.debug;
 	if(args.btnPrevious) _$arrowPrevious = args.btnPrevious;
 	if(args.btnNext) _$arrowNext = args.btnNext;
+	if(args.captionElement) _$captionElement = args.captionElement;
+	if(args.counterElement) _$counterElement = args.counterElement;
 
 	init(0);
 	
 	function init(n){
 		log(n,"init");
+
+		//modify the structure
+		modifyStructure();
 		//cache images array
-		_$figures = $("figure", _$element);
+		//_$figures = $(".figure", _$element);
 		//all image must be loaded
-		_$figures.hide();
+		$(".figure", _$element).hide();
 		//check for all the images to load
 		waitForImages(0);
-		//wait for all the images to load
-		// $(window).load(
-		// 	function(){
-		// 		initWithImages();
-		// });
+	}
+
+	function modifyStructure(n){
+		log(n,"@modifyStructure");
+		//var oldHtml = _$element.html();
+		//_$element.html("<div class='viewport'><div class='movable'>"+oldHtml+"</div></div>");
+		//get all the figures and wrap them in a container
+		$(".figure",_$element).wrapAll("<div class='viewport'><div class='movable'></div></div>");
 	}
 
 	function waitForImages(n){
-		log("waitForImages");
-
-//		$(window).load(
-//			function(){
-//				//initWithImages();
-//		});
+		log(n,"@waitForImages");
 
 		var $images = $("img", _$element);
-		var len = $images.length;
-		var loaded = 0;
+		_originalItemsCount = $images.length;
 
-		for(var a=0; a<len; a++){
-			var image = $images[a];
-			var src = $(image).attr("src");
-			image.onload=function(){
-				loaded++;
-				if(loaded===len) initWithImages(n);
+		for(var ix=0; ix<_originalItemsCount; ix++){
+			var image = $images[ix];
+			$(image).data("index",ix);//store the index
+
+			if(image.complete && image.width!==0){
+				log(n+1, "Image complete " + ix);
+				onImageLoaded(n+1,image);
+			}else{
+				reloadImage(n+1,image);
 			}
-			image.src = src;
+			
 		}
+	}
 
+	function reloadImage(n,image){
+		log(n,"@reloadImage")
+		//var src = $(image).attr("src");
+		var src = image.src;
+		// log(n+1,"Image complete " + image.complete);
+		image.onload=function(event){
+			onImageLoaded(n+1,image);
+		}
+		image.src = "";//trigger a reload
+		image.src = src;
+	}
+
+	function onImageLoaded(n,image){
+		log(n,"@onImageLoaded");
+		var ix = $(image).data("index");
+		log(n+1, "index " + ix);
+
+		//var w = image.width;
+		//log(n+1, "width " + w);
+
+		//_originalItemsWidthsArray[ix] = w;
+		_imagesLoaded++;
+		if(_originalItemsCount===_imagesLoaded) initWithImages(n+1);
 	}
 
 	function initWithImages(n){
-		log(n,"initWithImages");
+		log(n,"@initWithImages");
 
 		//remove all unnecessary/conflicting styles
 		removeCurrentStyles(n+1);
 		
 	//store the width of the container
 		_viewportWidth = _$element.width();
+		_viewportHeight = _$element.height();
 		log(n+1,"_viewportWidth "+ _viewportWidth);
+		log(n+1,"_viewportHeight "+ _viewportHeight);
 	
-	//get all the figures and wrap them in a container
-		$("figure",_$element).wrapAll("<div class='movable' />");
 		_$movable = $(".movable",_$element);
-		_$movable.wrap("<div class='viewport' />");
 		_$viewport = $(".viewport",_$element);
 
-
-	processOriginalItems(n+1);
+		processOriginalItems(n+1);
 
 	//set up the styles of the elements
 		_$element.css("position","relative");
-		_$viewport.css("position","relative").css("overflow-x","hidden").css("width",_$element.width()).css("height",_$element.height() );
-		_$movable.css("position","absolute").css('top','0px');
+		_$viewport.css("position","relative").css("overflow-x","hidden").css("width",_viewportWidth+"px").css("height",_viewportHeight+"px" );
+		_$movable.css("position","absolute").css('top','0px').css("height", _viewportHeight+"px" );
 	
 	//clone elements on the right
 		makePostItems(n+1);
@@ -113,18 +143,19 @@ var Carousel = function(element, args){
 		makePreItems(n+1);
 
 	//add click listener to elements
-		$("figure",_$element).click(onItemClick);
+		$(".figure",_$element).click(onItemClick);
 	
 		setupCaption(n+1);
 		setupArrows(n+1);//put arrows on top of caption
 
 		addCurrentHighlight(n+1);
 		showCurrentCaption(n+1);
+		showCurrentCounter(n+1);
 
 	}//init
 
 	function removeCurrentStyles(n){
-		$("figure",_$element).css("margin","0px").css("padding","0px");
+		$(".figure",_$element).css("margin","0px").css("padding","0px");
 		$("img",_$element).css("margin","0px").css("padding","0px");
 	}
 
@@ -133,7 +164,7 @@ var Carousel = function(element, args){
 		log(n,"@processOriginalItems");
 
 		//store references to the original elements
-			_originalItems = $("figure",_$element);
+			_originalItems = $(".figure",_$element);
 			
 		for(var i=0, len = _originalItems.length; i<len; i++){
 			processOriginalItem(n+1,i);
@@ -141,7 +172,6 @@ var Carousel = function(element, args){
 
 		log(n+1,"_originalItemsTotalWidth " + _originalItemsTotalWidth);
 		log(n+1,"_originalItemsCount " + _originalItemsCount);
-
 
 		//change the opacity of each image
 		//and prepare the styles
@@ -153,16 +183,25 @@ var Carousel = function(element, args){
 	
 	function processOriginalItem(n,ix){
 		log(n,"@processOriginalItem");
-		var $item = _$figures.eq(ix);
-		var $image = $("img",$item);
-
+		var $item = _originalItems.eq(ix);
+		log(n+1, "$item " + $item);
+		
 		//store and hide the captions
-		var $caption = $("figcaption", $item);
+		var $caption = $(".figcaption", $item);
 		_captions[ix] =  $caption ;
 		$caption.hide();
 
-		//var itemWidth = $item.width();
-		var itemWidth = $image.get(0).width;
+		var $image = $("img",$item);
+		var image = $image.get(0);
+		//log(n+1, "w " + $image.width);
+
+		//var image = $image[0];
+		//log(n+1, "Image element " + image);
+
+		//var itemWidth = _originalItemsWidthsArray[ix];
+		var itemWidth = image.width;
+		log(n+1, "itemWidth " +itemWidth);
+		//log(n+1, "src " + image.src);
 
 		if(itemWidth===0 || itemWidth===undefined){
 			log(n+1,"ERROR Could not get the width of image");
@@ -186,7 +225,7 @@ var Carousel = function(element, args){
 		_originalItemsWidthsArray.push(itemWidth);
 		_allItemsWithArray.push(itemWidth);
 		_originalItemsTotalWidth += itemWidth;
-		_originalItemsCount++;
+		//_originalItemsCount++;
 	}
 	
 	function makePreItems(n){
@@ -206,11 +245,11 @@ var Carousel = function(element, args){
 		resetMovableWidth(n+1);
 
 		_currentIndex++;
-		_captionOffset++;
+		_preItemsOffset++;
 
 		log(n+1, "_allItemsTotalWidth " + _allItemsTotalWidth);
 		log(n+1, "_currentIndex " + _currentIndex);
-		log(n+1, "_captionOffset " + _captionOffset);
+		log(n+1, "_preItemsOffset " + _preItemsOffset);
 	}
 
 	function makePostItems(n){
@@ -277,8 +316,10 @@ var Carousel = function(element, args){
 	}
 
 	function setupCaption(n){
-		_$captionElement = $("<div class='caption' />");
-		_$captionElement.appendTo(_$element);
+		if(!_$captionElement){
+			_$captionElement = $("<div class='caption' />");
+			_$captionElement.appendTo(_$element);
+		}
 	}
 
 	function onArrowPrevious(n,event){
@@ -405,6 +446,7 @@ var Carousel = function(element, args){
 		//show the text
 		//showItemCaption();
 		showCurrentCaption(n+1);
+		showCurrentCounter(n+1);
 		resetMovablePosition(n+1);
 	}
 	
@@ -521,39 +563,58 @@ var Carousel = function(element, args){
 
 	function addHighlight(n,index){
 		log(n,"@addHighlight " + index);
-		$("figure",_$element).eq(index).fadeTo(0,1);
+		$(".figure",_$element).eq(index).fadeTo(0,1);
 	}
 
 	function removeHighlight(n,index){
-		$("figure",_$element).eq(index).fadeTo(0,.5);
+		$(".figure",_$element).eq(index).fadeTo(0,.5);
 		//hide caption
-		$("figcaption",_$element).eq(index).hide();
+		$(".figcaption",_$element).eq(index).hide();
 	}
 
 	function showCurrentCaption(n){
 		log(n,"showCurrentCaption " + _currentIndex);
-		showCaption(n+1,_currentIndex-_captionOffset);
+		showCaption(n+1,_currentIndex);
 	}
 
 	function showCaption(n,index){
 		log(n,"@showCaption " + index);
 		index = getCompressedIndex(n+1,index);
+		log(n, "index " + index);
 		var cap = _captions[index];
 		cap.show();
 		_$captionElement.html( cap );
-		_$captionElement.find("figcaption").css("display","block");
+		_$captionElement.find(".figcaption").css("display","block");
 		_$captionElement.fadeIn(500);
 	}	
+
+	function showCurrentCounter(n){
+		log(n,"@showCurrentCounter");
+		if(_$counterElement){
+			var ix = getCompressedCurrentIndex(n+1);
+			log(n+1,"ix " + ix);
+			_$counterElement.html("Showing image " + (getCompressedCurrentIndex(n+1)+1) + " of " + _originalItemsCount);
+		}
+	}
 
 	function hideCaption(n){
 		_$captionElement.hide();
 	}
 
+	function getCompressedCurrentIndex(n){
+		//return the index that corresponds to the current image in the array of original items
+		return getCompressedIndex(n+1,_currentIndex);
+	}
+
 	function getCompressedIndex(n,index){
 		//given any image index
-		if(index<0) return _originalItems.length-1;
+		
 		//return the index that corresponds to this image in the array of original items
-		return index%_originalItems.length;
+		var ix = index%_originalItems.length - _preItemsOffset;
+
+		if(ix<0) return _originalItems.length-1;
+
+		return ix;
 	}
 
 	function log(nesting,msg){
@@ -563,7 +624,7 @@ var Carousel = function(element, args){
 			output += " - ";
 		}
 		output += msg;
-		if(window.log) window.log(output);
+		if(console.log) console.log(output);
 	}
 
 };

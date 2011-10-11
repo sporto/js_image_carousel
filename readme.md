@@ -10,18 +10,18 @@ An image carousel using jQuery
 ###Prepare HTML
 	
 	<div id="carousel1" class="carousel">
-		<figure>
+		<div class="figure">
 			<img src="images/450x100a.gif" />
-			<figcaption>
+			<div class="figcaption">
 				Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-			</figcaption>
-		</figure>
-		<figure>
+			</div>
+		</div>
+		<div class="figure">
 			<img src="images/450x100b.gif" />
-			<figcaption>
+			<div class="figcaption">
 				Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-			</figcaption>
-		</figure>
+			</div>
+		</div>
 		...
 	</div>  
 	
@@ -39,11 +39,20 @@ The script will wrap the <figures> around two divs:
 	<div id="carousel1" class="carousel">
 		<div class="viewport">
 			<div class="movable">
-				<figure ...>
+				<div class="figure" ...>
 			</div>
 		</div>
 	</div>
 	
+###CSS
+At least the following CSS is needed
+
+	#carousel1{
+		overflow:hidden;
+		width:XXpx;
+		height:XXpx;
+	}
+
 ###Arrow elements
 The script will create a couple of arrow elements for you. i.e. <div class="arrow next"></div>. You will need to style this element in CSS. For example:
 
@@ -94,10 +103,19 @@ Debug mode, show log messages
 **btnPrevious** (null)
 Optional reference to a jquery element to be used as previous button
 
-** btnNext** (null)
+**btnNext** (null)
 Optional reference to a jquery element to be used as next button
 
+**captionElement** (null)
+Optional reference to a jquery element to be used as container for the captions
+
+**counterElement** (null)
+Optional reference to a jquery element to be used as container for counter
+
 ##Changelog
+
+v.0.6
+Figure tags removed, div added instead. This is to deal with weird behaviour in IE when using figure.
 
 v.0.5.3
 Extra arguments added: btnPrevious and btnNext
