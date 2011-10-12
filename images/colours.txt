@@ -1,0 +1,6 @@
+a CB0713 red
+b FE3D18 bright red
+c F7BC05 yellow
+d 00BDB7 teal
+e 2C1620 black
+f 808000 burn ochre

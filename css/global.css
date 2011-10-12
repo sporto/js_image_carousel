@@ -11,8 +11,11 @@ body{
 	width:450px;
 	height: 200px;
 }
-
-.carousel .arrow{
+.carousel30{
+	height: 300px;
+}
+.carousel .arrow,
+.carousel30 .arrow{
 	width:30px;
 	height:30px;
 	background-color:black;
@@ -20,11 +23,13 @@ body{
 	top: 40px;
 }
 
-.carousel .previous{
+.carousel .previous,
+.carousel30 .previous{
 	left:0;
 }
 
-.carousel .next{
+.carousel .next,
+.carousel30 .next{
 	right:0;
 }
 

@@ -1,7 +1,7 @@
 /********************************************************************************************
 * Author: Sebastian Porto
 * August 2011
-* v.0.6.0
+* v.0.6.1
 * Source code is in https://github.com/sporto/js_image_carousel
 * ******************************************************************************************/
 
@@ -51,12 +51,10 @@ var Carousel = function(element, args){
 	function init(n){
 		log(n,"init");
 
-		//modify the structure
 		modifyStructure();
-		//cache images array
-		//_$figures = $(".figure", _$element);
-		//all image must be loaded
+		
 		$(".figure", _$element).hide();
+
 		//check for all the images to load
 		waitForImages(0);
 	}
@@ -80,7 +78,7 @@ var Carousel = function(element, args){
 			$(image).data("index",ix);//store the index
 
 			if(image.complete && image.width!==0){
-				log(n+1, "Image complete " + ix);
+				log1(n, "Image complete " + ix);
 				onImageLoaded(n+1,image);
 			}else{
 				reloadImage(n+1,image);
@@ -93,10 +91,10 @@ var Carousel = function(element, args){
 		log(n,"@reloadImage")
 		//var src = $(image).attr("src");
 		var src = image.src;
-		// log(n+1,"Image complete " + image.complete);
+		// log1(n,"Image complete " + image.complete);
 		image.onload=function(event){
 			onImageLoaded(n+1,image);
-		}
+		};
 		image.src = "";//trigger a reload
 		image.src = src;
 	}
@@ -104,10 +102,10 @@ var Carousel = function(element, args){
 	function onImageLoaded(n,image){
 		log(n,"@onImageLoaded");
 		var ix = $(image).data("index");
-		log(n+1, "index " + ix);
+		log1(n, "index " + ix);
 
 		//var w = image.width;
-		//log(n+1, "width " + w);
+		log1(n, "image.width " + image.width);
 
 		//_originalItemsWidthsArray[ix] = w;
 		_imagesLoaded++;
@@ -123,8 +121,8 @@ var Carousel = function(element, args){
 	//store the width of the container
 		_viewportWidth = _$element.width();
 		_viewportHeight = _$element.height();
-		log(n+1,"_viewportWidth "+ _viewportWidth);
-		log(n+1,"_viewportHeight "+ _viewportHeight);
+		log1(n,"_viewportWidth "+ _viewportWidth);
+		log1(n,"_viewportHeight "+ _viewportHeight);
 	
 		_$movable = $(".movable",_$element);
 		_$viewport = $(".viewport",_$element);
@@ -133,7 +131,7 @@ var Carousel = function(element, args){
 
 	//set up the styles of the elements
 		_$element.css("position","relative");
-		_$viewport.css("position","relative").css("overflow-x","hidden").css("width",_viewportWidth+"px").css("height",_viewportHeight+"px" );
+		_$viewport.css("position","relative").css("overflow","hidden").css("width",_viewportWidth+"px").css("height",_viewportHeight+"px" );
 		_$movable.css("position","absolute").css('top','0px').css("height", _viewportHeight+"px" );
 	
 	//clone elements on the right
@@ -143,7 +141,10 @@ var Carousel = function(element, args){
 		makePreItems(n+1);
 
 	//add click listener to elements
-		$(".figure",_$element).click(onItemClick);
+		$(".figure",_$element).click(
+			function(event){
+				onItemClick(0,event);
+			});
 	
 		setupCaption(n+1);
 		setupArrows(n+1);//put arrows on top of caption
@@ -165,13 +166,16 @@ var Carousel = function(element, args){
 
 		//store references to the original elements
 			_originalItems = $(".figure",_$element);
+
+		//in order to get the width on an image in IE the container must be visible
+		$(".figure", _$element).show();
 			
 		for(var i=0, len = _originalItems.length; i<len; i++){
 			processOriginalItem(n+1,i);
 		}
 
-		log(n+1,"_originalItemsTotalWidth " + _originalItemsTotalWidth);
-		log(n+1,"_originalItemsCount " + _originalItemsCount);
+		log1(n,"_originalItemsTotalWidth " + _originalItemsTotalWidth);
+		log1(n,"_originalItemsCount " + _originalItemsCount);
 
 		//change the opacity of each image
 		//and prepare the styles
@@ -184,7 +188,7 @@ var Carousel = function(element, args){
 	function processOriginalItem(n,ix){
 		log(n,"@processOriginalItem");
 		var $item = _originalItems.eq(ix);
-		log(n+1, "$item " + $item);
+		log1(n, "$item " + $item);
 		
 		//store and hide the captions
 		var $caption = $(".figcaption", $item);
@@ -193,22 +197,27 @@ var Carousel = function(element, args){
 
 		var $image = $("img",$item);
 		var image = $image.get(0);
-		//log(n+1, "w " + $image.width);
 
-		//var image = $image[0];
-		//log(n+1, "Image element " + image);
+//		log1(n, "image.src " + image.src);
+//		log1(n, "image.complete " + image.complete);
+//		log1(n, "$image " + $image);
+//		log1(n, "image " + image);
+//		log1(n, "$image.width " + $image.width() );
+//		log1(n, "image.width " + image.width );
+//		log1(n, "image.clientWidth " + image.clientWidth );
 
 		//var itemWidth = _originalItemsWidthsArray[ix];
 		var itemWidth = image.width;
-		log(n+1, "itemWidth " +itemWidth);
-		//log(n+1, "src " + image.src);
+		log1(n, "itemWidth " +itemWidth);
+
 
 		if(itemWidth===0 || itemWidth===undefined){
-			log(n+1,"ERROR Could not get the width of image");
+			log1(n,"ERROR Could not get the width of image");
 			//provide a fallback here, this doesn't behave if the images have different widths
 			itemWidth = _$element.width();
+			//$image.css("width",itemWidth+"px");//bad idea
 		}
-		log(n+1,"itemWidth = " + itemWidth);
+		log1(n,"itemWidth = " + itemWidth);
 		
 		//if not multiple images then change the width of each figure to take all the viewport width
 			if(!_showMultiple){
@@ -232,9 +241,9 @@ var Carousel = function(element, args){
 		log(n,"@makePreItems");
 		//only one pre clone is made
 		var clonedIndex = _originalItemsCount-1;
-		log(n+1,"clonedIndex " + clonedIndex);
+		log1(n,"clonedIndex " + clonedIndex);
 		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
-		log(n+1,"clonedWidth " + clonedWidth);
+		log1(n,"clonedWidth " + clonedWidth);
 		var clone = $(_originalItems[clonedIndex]).clone();
 		
 		_allItemsWithArray.unshift(clonedWidth);
@@ -247,9 +256,9 @@ var Carousel = function(element, args){
 		_currentIndex++;
 		_preItemsOffset++;
 
-		log(n+1, "_allItemsTotalWidth " + _allItemsTotalWidth);
-		log(n+1, "_currentIndex " + _currentIndex);
-		log(n+1, "_preItemsOffset " + _preItemsOffset);
+		log1(n, "_allItemsTotalWidth " + _allItemsTotalWidth);
+		log1(n, "_currentIndex " + _currentIndex);
+		log1(n, "_preItemsOffset " + _preItemsOffset);
 	}
 
 	function makePostItems(n){
@@ -261,22 +270,22 @@ var Carousel = function(element, args){
 		do{
 			tooMany++;
 			if(tooMany> 25 ) {
-				log(n+1,"Too many post items!!!");
+				log1(n,"Too many post items!!!");
 				break;
 			}
 			if(nextIndex >= _originalItemsCount) nextIndex = 0;
 			clonePostItem(n+1,nextIndex);
 			nextIndex++;
-		}while( (_allItemsTotalWidth) < (_viewportWidth*2.5) );
+		}while( (_allItemsTotalWidth < _viewportWidth*2.5) || (_allItemsTotalWidth < _originalItemsTotalWidth*3) );
 
-		log(n+1,"_allItemsTotalWidth " + _allItemsTotalWidth);
+		log1(n,"_allItemsTotalWidth " + _allItemsTotalWidth);
 	}
 
 	function clonePostItem(n,clonedIndex){
 		log(n,"@clonePostItem");
-		log(n+1,"clonedIndex "+ clonedIndex);
+		log1(n,"clonedIndex "+ clonedIndex);
 		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
-		log(n+1,"clonedWidth " + clonedWidth);
+		log1(n,"clonedWidth " + clonedWidth);
 		var clone = $(_originalItems[clonedIndex]).clone();
 
 		_allItemsWithArray.push(clonedWidth);
@@ -333,8 +342,8 @@ var Carousel = function(element, args){
 	}
 
 	function onItemClick(n,event){
-		//scope on this function is the clicked element
-		var ix = $(this).index();
+		log(n,"@onItemClick");
+		var ix = $(event.currentTarget).index();
 		moveTo(n+1, ix );
 	}
 
@@ -352,8 +361,8 @@ var Carousel = function(element, args){
 
 	function moveTo(n,toIndex){
 		log(n, "@moveTo " + toIndex );
-		log(n+1,"_currentIndex " + _currentIndex);
-		log(n+1,"_allItemsTotalWidth = " + _allItemsTotalWidth);
+		log1(n,"_currentIndex " + _currentIndex);
+		log1(n,"_allItemsTotalWidth = " + _allItemsTotalWidth);
 		if(_allItemsTotalWidth===0){
 			rebuildWidths(n+1);
 		}
@@ -367,23 +376,23 @@ var Carousel = function(element, args){
 		if(toIndex===_currentIndex) return;
 
 		var indexDif = toIndex - _currentIndex;
-		log(n+1,"indexDif " + indexDif);
+		log1(n,"indexDif " + indexDif);
 
 		var shifted = 0;
 
 		if(toIndex<_currentIndex){
 			shifted = shiftMovableAllLeft(n+1);
-			log(n+1,"shifted " + shifted);
+			log1(n,"shifted " + shifted);
 			toIndex += (shifted*_originalItemsCount);
 		}
 
 		if(toIndex>_currentIndex){
 			shifted = shiftMovableAllRight(n+1);
-			log(n+1,"shifted " + shifted);
+			log1(n,"shifted " + shifted);
 			toIndex -= (shifted*_originalItemsCount);
 		}
 
-		log(n+1,"new toIndex " + toIndex);
+		log1(n,"new toIndex " + toIndex);
 		
 		animate(n+1,_currentIndex,toIndex);
 
@@ -397,16 +406,16 @@ var Carousel = function(element, args){
 		if(fromIndex<0) throw("fromIndex invalid " + fromIndex);
 		if(toIndex<0) throw("toIndex invalid " + toIndex);
 
-		log(n+1,"getDifference");
-		log(n+1,"fromIndex " + fromIndex);
-		log(n+1,"toIndex " + toIndex);
+		log1(n,"getDifference");
+		log1(n,"fromIndex " + fromIndex);
+		log1(n,"toIndex " + toIndex);
 
 		if(fromIndex===toIndex) return 0;
 
 		var dif = 0;
 
 		if(fromIndex>toIndex){
-			log(n+1,"Backwards");
+			log1(n,"Backwards");
 			for(var ix = toIndex; ix<fromIndex; ix++){
 				dif += _allItemsWithArray[ix];
 			}
@@ -414,7 +423,7 @@ var Carousel = function(element, args){
 		}
 
 		if(fromIndex<toIndex){
-			log(n+1,"Forward");
+			log1(n,"Forward");
 			for(var ix = fromIndex; ix<toIndex; ix++){
 				dif += _allItemsWithArray[ix];
 			}
@@ -424,15 +433,15 @@ var Carousel = function(element, args){
 
 	function animate(n,fromIndex, toIndex){
 		log(n,"@animate");
-		log(n+1,"fromIndex " + fromIndex);
-		log(n+1,"toIndex " + toIndex);
+		log1(n,"fromIndex " + fromIndex);
+		log1(n,"toIndex " + toIndex);
 
 		var dif = getDifference(n+1,fromIndex, toIndex);
-		log(n+1,"dif " + dif);
+		log1(n,"dif " + dif);
 
 		var newLeft = getMovableLeft(n+1) + dif;
 
-		log(n+1,"newLeft " + newLeft);
+		log1(n,"newLeft " + newLeft);
 
 		_$movable.animate({
 			left:newLeft
@@ -474,12 +483,12 @@ var Carousel = function(element, args){
 	function resetMovablePosition(n){
 		//make sure that the movable is where it needs to be
 		log(n,"@resetMovablePosition");
-		log(n+1,"_currentIndex " + _currentIndex);
+		log1(n,"_currentIndex " + _currentIndex);
 		var le = 0;
 		for(var i=0; i<_currentIndex; i++){
 			le += _allItemsWithArray[i];
 		}
-		log(n+1,-le);
+		log1(n,-le);
 		setMovableLeft(n+1,-le);
 	}
 
@@ -497,27 +506,29 @@ var Carousel = function(element, args){
 
 		var newCurrentIndex =_currentIndex + _originalItems.length;
 
-		log(n+1,"_currentIndex "+ _currentIndex);
-		log(n+1,"newCurrentIndex "+ newCurrentIndex);
+		log1(n,"_currentIndex "+ _currentIndex);
+		log1(n,"newCurrentIndex "+ newCurrentIndex);
 
 		var movableRight =  getMovableRight(n+1);
-		log(n+1, "movableRight " + movableRight );
-		log(n+1, "_originalItemsTotalWidth " + _originalItemsTotalWidth);
-		log(n+1, "_viewportWidth " + _viewportWidth);
+		var newMovableRight = movableRight - _originalItemsTotalWidth;
+		log1(n, "movableRight " + movableRight );
+		log1(n, "newMovableRight " + newMovableRight );
+		log1(n, "_originalItemsTotalWidth " + _originalItemsTotalWidth);
+		log1(n, "_viewportWidth " + _viewportWidth);
 
-		var check1 = (movableRight-_originalItemsTotalWidth) >= _viewportWidth;
+		var check1 = newMovableRight >= _viewportWidth;
 		var check2 = newCurrentIndex < _allItemsWithArray.length;
 
-		log(n+1,"check1 "+check1);
-		log(n+1,"check2 "+check2);
+		log1(n,"check1 "+check1);
+		log1(n,"check2 "+check2);
 
 		if(check1 && check2){
 			moveMovable(n+1, - _originalItemsTotalWidth);
 			_currentIndex = newCurrentIndex;
-			log(n+1,"new currentIndex " + _currentIndex);
+			log1(n,"new currentIndex " + _currentIndex);
 			return true;
 		}else{
-			log(n+1,"Cannot more the movable left any further");
+			log1(n,"Cannot more the movable left any further");
 			return false;
 		}
 	}
@@ -537,20 +548,20 @@ var Carousel = function(element, args){
 		log(n,"@shiftMovableOneRight");
 
 		var newCurrentIndex =_currentIndex - _originalItems.length;
-		log(n+1,"newCurrentIndex " + newCurrentIndex);
+		log1(n,"newCurrentIndex " + newCurrentIndex);
 
 		// var check1 = getMovableLeft()<0;//there are no items on the left
 		var check2 = newCurrentIndex>=0;
 
-		log(n+1,"check " + check2);
+		log1(n,"check " + check2);
 
 		if( check2 ){
 			moveMovable(n+1,_originalItemsTotalWidth);
 			_currentIndex = newCurrentIndex;
-			log(n+1,"new currentIndex " + _currentIndex);
+			log1(n,"new currentIndex " + _currentIndex);
 			return true;
 		}else{
-			log(n+1,"Cannot move movable right any further");
+			log1(n,"Cannot move movable right any further");
 			return false;
 		}
 
@@ -592,7 +603,7 @@ var Carousel = function(element, args){
 		log(n,"@showCurrentCounter");
 		if(_$counterElement){
 			var ix = getCompressedCurrentIndex(n+1);
-			log(n+1,"ix " + ix);
+			log1(n,"ix " + ix);
 			_$counterElement.html("Showing image " + (getCompressedCurrentIndex(n+1)+1) + " of " + _originalItemsCount);
 		}
 	}
@@ -625,6 +636,10 @@ var Carousel = function(element, args){
 		}
 		output += msg;
 		if(console.log) console.log(output);
+	}
+
+	function log1(nesting,msg){
+		log(nesting+1,msg);
 	}
 
 };
