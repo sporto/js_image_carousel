@@ -1,8 +1,8 @@
 /********************************************************************************************
 * Author: Sebastian Porto
-* August 2011
-* v.0.6.1
-* Source code is in https://github.com/sporto/js_image_carousel
+* Nov 2011
+* v.0.6.2
+* https://github.com/sporto/js_image_carousel
 * ******************************************************************************************/
 
 var Carousel = function(element, args){
@@ -33,6 +33,8 @@ var Carousel = function(element, args){
 	var _$counterElement;
 	var _clickEnable=true;
 	var _speed = 1000;
+	var _autoSpeed = 0;
+	var _autoTimer;
 	var _debug = false;
 	
 	var _captions = [];
@@ -40,6 +42,7 @@ var Carousel = function(element, args){
 	var _preItemsOffset = 0 ; //difference between the first item and the original first item
 
 	if(args.speed) _speed = args.speed;
+	if(args.autoSpeed) _autoSpeed = args.autoSpeed;
 	if(args.debug) _debug = args.debug;
 	if(args.btnPrevious) _$arrowPrevious = args.btnPrevious;
 	if(args.btnNext) _$arrowNext = args.btnNext;
@@ -61,8 +64,6 @@ var Carousel = function(element, args){
 
 	function modifyStructure(n){
 		log(n,"@modifyStructure");
-		//var oldHtml = _$element.html();
-		//_$element.html("<div class='viewport'><div class='movable'>"+oldHtml+"</div></div>");
 		//get all the figures and wrap them in a container
 		$(".figure",_$element).wrapAll("<div class='viewport'><div class='movable'></div></div>");
 	}
@@ -118,7 +119,7 @@ var Carousel = function(element, args){
 		//remove all unnecessary/conflicting styles
 		removeCurrentStyles(n+1);
 		
-	//store the width of the container
+		//store the width of the container
 		_viewportWidth = _$element.width();
 		_viewportHeight = _$element.height();
 		log1(n,"_viewportWidth "+ _viewportWidth);
@@ -129,18 +130,18 @@ var Carousel = function(element, args){
 
 		processOriginalItems(n+1);
 
-	//set up the styles of the elements
+		//set up the styles of the elements
 		_$element.css("position","relative");
 		_$viewport.css("position","relative").css("overflow","hidden").css("width",_viewportWidth+"px").css("height",_viewportHeight+"px" );
 		_$movable.css("position","absolute").css('top','0px').css("height", _viewportHeight+"px" );
 	
-	//clone elements on the right
+		//clone elements on the right
 		makePostItems(n+1);
 
-	//clone one item on the left
+		//clone one item on the left
 		makePreItems(n+1);
 
-	//add click listener to elements
+		//add click listener to elements
 		$(".figure",_$element).click(
 			function(event){
 				onItemClick(0,event);
@@ -152,14 +153,30 @@ var Carousel = function(element, args){
 		addCurrentHighlight(n+1);
 		showCurrentCaption(n+1);
 		showCurrentCounter(n+1);
+		startAuto();
 
 	}//init
+
+	function startAuto(n){
+		log(n,"@startAuto");
+		if(_autoSpeed>0){
+			_autoTimer = setInterval(
+				function(){
+					moveNext(n+1);
+				},
+				_autoSpeed
+			);
+		}
+	}
+
+	function stopAuto(){
+		clearInterval(_autoTimer);
+	}
 
 	function removeCurrentStyles(n){
 		$(".figure",_$element).css("margin","0px").css("padding","0px");
 		$("img",_$element).css("margin","0px").css("padding","0px");
 	}
-
 
 	function processOriginalItems(n){
 		log(n,"@processOriginalItems");
@@ -198,15 +215,6 @@ var Carousel = function(element, args){
 		var $image = $("img",$item);
 		var image = $image.get(0);
 
-//		log1(n, "image.src " + image.src);
-//		log1(n, "image.complete " + image.complete);
-//		log1(n, "$image " + $image);
-//		log1(n, "image " + image);
-//		log1(n, "$image.width " + $image.width() );
-//		log1(n, "image.width " + image.width );
-//		log1(n, "image.clientWidth " + image.clientWidth );
-
-		//var itemWidth = _originalItemsWidthsArray[ix];
 		var itemWidth = image.width;
 		log1(n, "itemWidth " +itemWidth);
 
@@ -215,7 +223,6 @@ var Carousel = function(element, args){
 			log1(n,"ERROR Could not get the width of image");
 			//provide a fallback here, this doesn't behave if the images have different widths
 			itemWidth = _$element.width();
-			//$image.css("width",itemWidth+"px");//bad idea
 		}
 		log1(n,"itemWidth = " + itemWidth);
 		
@@ -234,7 +241,6 @@ var Carousel = function(element, args){
 		_originalItemsWidthsArray.push(itemWidth);
 		_allItemsWithArray.push(itemWidth);
 		_originalItemsTotalWidth += itemWidth;
-		//_originalItemsCount++;
 	}
 	
 	function makePreItems(n){
@@ -332,17 +338,20 @@ var Carousel = function(element, args){
 	}
 
 	function onArrowPrevious(n,event){
+		stopAuto();
 		if(_clickEnable) movePrevious(n+1);
 		return false;
 	}
 
 	function onArrowNext(n,event){
+		stopAuto();
 		if(_clickEnable) moveNext(n+1);
 		return false;
 	}
 
 	function onItemClick(n,event){
 		log(n,"@onItemClick");
+		stopAuto();
 		var ix = $(event.currentTarget).index();
 		moveTo(n+1, ix );
 	}

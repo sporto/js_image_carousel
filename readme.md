@@ -1,3 +1,6 @@
+jQuery Carousel
+===============
+
 An image carousel using jQuery
 
 ##Usage
@@ -34,6 +37,7 @@ An image carousel using jQuery
 	</script>
 
 ###Added elements
+
 The script will wrap the <figures> around two divs:
 
 	<div id="carousel1" class="carousel">
@@ -45,6 +49,7 @@ The script will wrap the <figures> around two divs:
 	</div>
 	
 ###CSS
+
 At least the following CSS is needed
 
 	#carousel1{
@@ -54,6 +59,7 @@ At least the following CSS is needed
 	}
 
 ###Arrow elements
+
 The script will create a couple of arrow elements for you. i.e. <div class="arrow next"></div>. You will need to style this element in CSS. For example:
 
 	.carousel .arrow{
@@ -74,6 +80,7 @@ The script will create a couple of arrow elements for you. i.e. <div class="arro
 	}
 	
 ###Caption
+
 The script will also create a caption element <div class="caption">...</div>. You can also style this element using CSS. For example:
 
 	.carousel .caption{
@@ -90,6 +97,9 @@ The following options are available:
 
 **speed** (1000)
 Speed of transition in milliseconds
+
+**autoSpeed*** (0)
+If set other than 0, the carousel will play automatically
 
 **showMultiple** (true)
 Show multiple images at the same time in the viewport (Only relevant if images are smaller than the viewport)
@@ -113,6 +123,9 @@ Optional reference to a jquery element to be used as container for the captions
 Optional reference to a jquery element to be used as container for counter
 
 ##Changelog
+
+v.0.6.2
+Added autoSpeed option
 
 v.0.6
 Figure tags removed, div added instead. This is to deal with weird behaviour in IE when using figure.
