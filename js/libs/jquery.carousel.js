@@ -1,32 +1,28 @@
 /********************************************************************************************
 * Author: Sebastian Porto
 * Nov 2011
-* v.0.6.2
+* v.0.6.3
 * https://github.com/sporto/js_image_carousel
 * ******************************************************************************************/
 
 var Carousel = function(element, args){
-	var _that = this;
+	var _this = {};
 	var _$element = element;
 	//var _$figures;
 	// var _element = element.get();//store the DOM element
 	var _$viewport;
 	var _$movable;
 	var _viewportWidth = 0; //the width of the viewport
-	var _viewportHeight = 0;
-	
+	var _viewportHeight = 0;	
 	var _showMultiple = (typeof(args.showMultiple)==='undefined') ? true : args.showMultiple; //show multiple images in the viewport
-	var _centered = (typeof(args.centered)==='undefined') ? true : args.centered;//only relevant if _showMultiple is false
-		
+	var _centered = (typeof(args.centered)==='undefined') ? true : args.centered;//only relevant if _showMultiple is false		
 	var _imagesLoaded = 0;
 	var _originalItems = [];//references to the original figures, no clones here
 	var _originalItemsCount = 0;
 	var _originalItemsTotalWidth = 0; //original width of all the figures, no clones counted
-	var _originalItemsWidthsArray = [];
-	
+	var _originalItemsWidthsArray = [];	
 	var _allItemsTotalWidth = 0;
 	var _allItemsWithArray = [];
-
 	var _currentIndex = 0;
 	var _$arrowPrevious;
 	var _$arrowNext;
@@ -35,11 +31,11 @@ var Carousel = function(element, args){
 	var _speed = 1000;
 	var _autoSpeed = 0;
 	var _autoTimer;
-	var _debug = false;
-	
+	var _debug = false;	
 	var _captions = [];
 	var _$captionElement;
 	var _preItemsOffset = 0 ; //difference between the first item and the original first item
+	var _callbacks = {};
 
 	if(args.speed) _speed = args.speed;
 	if(args.autoSpeed) _autoSpeed = args.autoSpeed;
@@ -48,11 +44,12 @@ var Carousel = function(element, args){
 	if(args.btnNext) _$arrowNext = args.btnNext;
 	if(args.captionElement) _$captionElement = args.captionElement;
 	if(args.counterElement) _$counterElement = args.counterElement;
+	if(args.onChange) _callbacks.onChange = args.onChange;
 
 	init(0);
 	
 	function init(n){
-		log(n,"init");
+		log("init", n);
 
 		modifyStructure();
 		
@@ -63,15 +60,15 @@ var Carousel = function(element, args){
 	}
 
 	function modifyStructure(n){
-		log(n,"@modifyStructure");
+		log("@modifyStructure", n);
 		//get all the figures and wrap them in a container
 		$(".figure",_$element).wrapAll("<div class='viewport'><div class='movable'></div></div>");
 	}
 
 	function waitForImages(n){
-		log(n,"@waitForImages");
+		log("@waitForImages", n);
 
-		var $images = $("img", _$element);
+		var $images = $(".figure img", _$element);
 		_originalItemsCount = $images.length;
 
 		for(var ix=0; ix<_originalItemsCount; ix++){
@@ -79,34 +76,34 @@ var Carousel = function(element, args){
 			$(image).data("index",ix);//store the index
 
 			if(image.complete && image.width!==0){
-				log1(n, "Image complete " + ix);
-				onImageLoaded(n+1,image);
+				log1( "Image complete " + ix, n);
+				onImageLoaded(image,n+1);
 			}else{
-				reloadImage(n+1,image);
+				reloadImage(image,n+1);
 			}
 			
 		}
 	}
 
-	function reloadImage(n,image){
-		log(n,"@reloadImage")
+	function reloadImage(image,n){
+		log("@reloadImage",n)
 		//var src = $(image).attr("src");
 		var src = image.src;
-		// log1(n,"Image complete " + image.complete);
+		// log1("Image complete " + image.complete);
 		image.onload=function(event){
-			onImageLoaded(n+1,image);
+			onImageLoaded(image,n+1);
 		};
 		image.src = "";//trigger a reload
 		image.src = src;
 	}
 
-	function onImageLoaded(n,image){
-		log(n,"@onImageLoaded");
+	function onImageLoaded(image,n){
+		log("@onImageLoaded", n);
 		var ix = $(image).data("index");
-		log1(n, "index " + ix);
+		log1( "index " + ix, n);
 
 		//var w = image.width;
-		log1(n, "image.width " + image.width);
+		log1( "image.width " + image.width, n);
 
 		//_originalItemsWidthsArray[ix] = w;
 		_imagesLoaded++;
@@ -114,7 +111,7 @@ var Carousel = function(element, args){
 	}
 
 	function initWithImages(n){
-		log(n,"@initWithImages");
+		log("@initWithImages", n);
 
 		//remove all unnecessary/conflicting styles
 		removeCurrentStyles(n+1);
@@ -122,8 +119,8 @@ var Carousel = function(element, args){
 		//store the width of the container
 		_viewportWidth = _$element.width();
 		_viewportHeight = _$element.height();
-		log1(n,"_viewportWidth "+ _viewportWidth);
-		log1(n,"_viewportHeight "+ _viewportHeight);
+		log1("_viewportWidth "+ _viewportWidth, n);
+		log1("_viewportHeight "+ _viewportHeight, n);
 	
 		_$movable = $(".movable",_$element);
 		_$viewport = $(".viewport",_$element);
@@ -144,7 +141,7 @@ var Carousel = function(element, args){
 		//add click listener to elements
 		$(".figure",_$element).click(
 			function(event){
-				onItemClick(0,event);
+				onItemClick(event,0);
 			});
 	
 		setupCaption(n+1);
@@ -158,7 +155,7 @@ var Carousel = function(element, args){
 	}//init
 
 	function startAuto(n){
-		log(n,"@startAuto");
+		log("@startAuto", n);
 		if(_autoSpeed>0){
 			_autoTimer = setInterval(
 				function(){
@@ -175,11 +172,11 @@ var Carousel = function(element, args){
 
 	function removeCurrentStyles(n){
 		$(".figure",_$element).css("margin","0px").css("padding","0px");
-		$("img",_$element).css("margin","0px").css("padding","0px");
+		$(".figure img",_$element).css("margin","0px").css("padding","0px");
 	}
 
 	function processOriginalItems(n){
-		log(n,"@processOriginalItems");
+		log("@processOriginalItems", n);
 
 		//store references to the original elements
 			_originalItems = $(".figure",_$element);
@@ -188,11 +185,11 @@ var Carousel = function(element, args){
 		$(".figure", _$element).show();
 			
 		for(var i=0, len = _originalItems.length; i<len; i++){
-			processOriginalItem(n+1,i);
+			processOriginalItem(i,n+1);
 		}
 
-		log1(n,"_originalItemsTotalWidth " + _originalItemsTotalWidth);
-		log1(n,"_originalItemsCount " + _originalItemsCount);
+		log1("_originalItemsTotalWidth " + _originalItemsTotalWidth, n);
+		log1("_originalItemsCount " + _originalItemsCount, n);
 
 		//change the opacity of each image
 		//and prepare the styles
@@ -202,10 +199,10 @@ var Carousel = function(element, args){
 			_allItemsTotalWidth = _originalItemsTotalWidth;
 	}
 	
-	function processOriginalItem(n,ix){
-		log(n,"@processOriginalItem");
+	function processOriginalItem(ix,n){
+		log("@processOriginalItem", n);
 		var $item = _originalItems.eq(ix);
-		log1(n, "$item " + $item);
+		log1( "$item " + $item, n);
 		
 		//store and hide the captions
 		var $caption = $(".figcaption", $item);
@@ -216,15 +213,15 @@ var Carousel = function(element, args){
 		var image = $image.get(0);
 
 		var itemWidth = image.width;
-		log1(n, "itemWidth " +itemWidth);
+		log1( "itemWidth " +itemWidth, n);
 
 
 		if(itemWidth===0 || itemWidth===undefined){
-			log1(n,"ERROR Could not get the width of image");
+			log1("ERROR Could not get the width of image", n);
 			//provide a fallback here, this doesn't behave if the images have different widths
 			itemWidth = _$element.width();
 		}
-		log1(n,"itemWidth = " + itemWidth);
+		log1("itemWidth = " + itemWidth, n);
 		
 		//if not multiple images then change the width of each figure to take all the viewport width
 			if(!_showMultiple){
@@ -244,31 +241,31 @@ var Carousel = function(element, args){
 	}
 	
 	function makePreItems(n){
-		log(n,"@makePreItems");
+		log("@makePreItems", n);
 		//only one pre clone is made
 		var clonedIndex = _originalItemsCount-1;
-		log1(n,"clonedIndex " + clonedIndex);
+		log1("clonedIndex " + clonedIndex, n);
 		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
-		log1(n,"clonedWidth " + clonedWidth);
+		log1("clonedWidth " + clonedWidth, n);
 		var clone = $(_originalItems[clonedIndex]).clone();
 		
 		_allItemsWithArray.unshift(clonedWidth);
 		_allItemsTotalWidth += clonedWidth;
 
 		_$movable.prepend( clone );
-		moveMovable(n+1,-clonedWidth);
+		moveMovable(-clonedWidth,n+1);
 		resetMovableWidth(n+1);
 
 		_currentIndex++;
 		_preItemsOffset++;
 
-		log1(n, "_allItemsTotalWidth " + _allItemsTotalWidth);
-		log1(n, "_currentIndex " + _currentIndex);
-		log1(n, "_preItemsOffset " + _preItemsOffset);
+		log1( "_allItemsTotalWidth " + _allItemsTotalWidth, n);
+		log1( "_currentIndex " + _currentIndex, n);
+		log1( "_preItemsOffset " + _preItemsOffset, n);
 	}
 
 	function makePostItems(n){
-		log(n,"@makePostItems");
+		log("@makePostItems", n);
 		var tooMany = 0;
 		var nextIndex = 0;
 		//at least one post item
@@ -276,22 +273,22 @@ var Carousel = function(element, args){
 		do{
 			tooMany++;
 			if(tooMany> 25 ) {
-				log1(n,"Too many post items!!!");
+				log1("Too many post items!!!", n);
 				break;
 			}
 			if(nextIndex >= _originalItemsCount) nextIndex = 0;
-			clonePostItem(n+1,nextIndex);
+			clonePostItem(nextIndex,n+1);
 			nextIndex++;
 		}while( (_allItemsTotalWidth < _viewportWidth*2.5) || (_allItemsTotalWidth < _originalItemsTotalWidth*3) );
 
-		log1(n,"_allItemsTotalWidth " + _allItemsTotalWidth);
+		log1("_allItemsTotalWidth " + _allItemsTotalWidth, n);
 	}
 
-	function clonePostItem(n,clonedIndex){
-		log(n,"@clonePostItem");
-		log1(n,"clonedIndex "+ clonedIndex);
+	function clonePostItem(clonedIndex,n){
+		log("@clonePostItem", n);
+		log1("clonedIndex "+ clonedIndex, n);
 		var clonedWidth = _originalItemsWidthsArray[clonedIndex];
-		log1(n,"clonedWidth " + clonedWidth);
+		log1("clonedWidth " + clonedWidth, n);
 		var clone = $(_originalItems[clonedIndex]).clone();
 
 		_allItemsWithArray.push(clonedWidth);
@@ -307,7 +304,7 @@ var Carousel = function(element, args){
 	}
 
 	function resetMovableWidth(n){
-		log(n,"resetMovableWidth");
+		log("resetMovableWidth", n);
 		_$movable.width(_allItemsTotalWidth);
 	}
 
@@ -322,10 +319,12 @@ var Carousel = function(element, args){
 				_$arrowNext.appendTo(_$element);
 			}
 			_$arrowPrevious.click(function(event){
-				onArrowPrevious(0,event);
+				onArrowPrevious(event,0);
+				return false;
 			});
 			_$arrowNext.click(function(event){
-				onArrowNext(0,event);
+				onArrowNext(event,0);
+				return false;
 			});
 		}
 	}
@@ -337,41 +336,41 @@ var Carousel = function(element, args){
 		}
 	}
 
-	function onArrowPrevious(n,event){
+	function onArrowPrevious(event,n){
 		stopAuto();
 		if(_clickEnable) movePrevious(n+1);
 		return false;
 	}
 
-	function onArrowNext(n,event){
+	function onArrowNext(event,n){
 		stopAuto();
 		if(_clickEnable) moveNext(n+1);
 		return false;
 	}
 
-	function onItemClick(n,event){
-		log(n,"@onItemClick");
+	function onItemClick(event,n){
+		log("@onItemClick", n);
 		stopAuto();
 		var ix = $(event.currentTarget).index();
-		moveTo(n+1, ix );
+		moveTo(ix,n+1);
 	}
 
 	function movePrevious(n){
-		move(n+1,-1);
+		move(-1,n+1);
 	}
 
 	function moveNext(n){
-		move(n+1,1);
+		move(1,n+1);
 	}
 
-	function move(n,dir){
-		moveTo(n+1, _currentIndex + dir);
+	function move(dir,n){
+		moveTo(_currentIndex + dir, n+1);
 	}
 
-	function moveTo(n,toIndex){
-		log(n, "@moveTo " + toIndex );
-		log1(n,"_currentIndex " + _currentIndex);
-		log1(n,"_allItemsTotalWidth = " + _allItemsTotalWidth);
+	function moveTo(toIndex,n){
+		log( "@moveTo " + toIndex, n);
+		log1("_currentIndex " + _currentIndex, n);
+		log1("_allItemsTotalWidth = " + _allItemsTotalWidth, n);
 		if(_allItemsTotalWidth===0){
 			rebuildWidths(n+1);
 		}
@@ -379,52 +378,63 @@ var Carousel = function(element, args){
 		if(toIndex===_currentIndex) return;
 
 		_clickEnable = false;
-		removeHighlight(n+1,_currentIndex);
+		removeHighlight(_currentIndex,n+1);
 		hideCaption(n+1);
 		
 		if(toIndex===_currentIndex) return;
 
 		var indexDif = toIndex - _currentIndex;
-		log1(n,"indexDif " + indexDif);
+		log1("indexDif " + indexDif, n);
 
 		var shifted = 0;
 
 		if(toIndex<_currentIndex){
 			shifted = shiftMovableAllLeft(n+1);
-			log1(n,"shifted " + shifted);
+			log1("shifted " + shifted, n);
 			toIndex += (shifted*_originalItemsCount);
 		}
 
 		if(toIndex>_currentIndex){
 			shifted = shiftMovableAllRight(n+1);
-			log1(n,"shifted " + shifted);
+			log1("shifted " + shifted, n);
 			toIndex -= (shifted*_originalItemsCount);
 		}
 
-		log1(n,"new toIndex " + toIndex);
+		log1("new toIndex " + toIndex, n);
 		
-		animate(n+1,_currentIndex,toIndex);
+		animate(_currentIndex,toIndex,n+1);
 
 		_currentIndex = toIndex;
 		addCurrentHighlight(n+1);
+
+		//callback
+		if(_callbacks.onChange) _callbacks.onChange();
 	}
 
-	function getDifference(n,fromIndex,toIndex){
-		log(n,"@getDifference");
+	function publicMoveTo(toIndex){
+		log("@publicMoveTo");
+		//log(toIndex);
+		var ccix = getCompressedCurrentIndex();
+		var dif = _currentIndex - ccix;
+		moveTo(toIndex+dif);
+	}
+
+	function getDifference(fromIndex,toIndex,n){
+		log("@getDifference", n);
 
 		if(fromIndex<0) throw("fromIndex invalid " + fromIndex);
 		if(toIndex<0) throw("toIndex invalid " + toIndex);
 
-		log1(n,"getDifference");
-		log1(n,"fromIndex " + fromIndex);
-		log1(n,"toIndex " + toIndex);
+		log1("getDifference", n);
+		log1("fromIndex " + fromIndex, n);
+		log1("toIndex " + toIndex, n);
 
 		if(fromIndex===toIndex) return 0;
 
 		var dif = 0;
 
 		if(fromIndex>toIndex){
-			log1(n,"Backwards");
+			log1("Backwards", n);
 			for(var ix = toIndex; ix<fromIndex; ix++){
 				dif += _allItemsWithArray[ix];
 			}
@@ -432,7 +442,7 @@ var Carousel = function(element, args){
 		}
 
 		if(fromIndex<toIndex){
-			log1(n,"Forward");
+			log1("Forward", n);
 			for(var ix = fromIndex; ix<toIndex; ix++){
 				dif += _allItemsWithArray[ix];
 			}
@@ -440,17 +450,17 @@ var Carousel = function(element, args){
 		}
 	}
 
-	function animate(n,fromIndex, toIndex){
-		log(n,"@animate");
-		log1(n,"fromIndex " + fromIndex);
-		log1(n,"toIndex " + toIndex);
+	function animate(fromIndex, toIndex,n){
+		log("@animate", n);
+		log1("fromIndex " + fromIndex, n);
+		log1("toIndex " + toIndex, n);
 
-		var dif = getDifference(n+1,fromIndex, toIndex);
-		log1(n,"dif " + dif);
+		var dif = getDifference(fromIndex, toIndex,n+1);
+		log1("dif " + dif, n);
 
 		var newLeft = getMovableLeft(n+1) + dif;
 
-		log1(n,"newLeft " + newLeft);
+		log1("newLeft " + newLeft, n);
 
 		_$movable.animate({
 			left:newLeft
@@ -459,7 +469,7 @@ var Carousel = function(element, args){
 	}
 
 	function animateDone(n){
-		log(n,"animateDone");
+		log("animateDone", n);
 		_clickEnable = true;
 		//show the text
 		//showItemCaption();
@@ -484,20 +494,20 @@ var Carousel = function(element, args){
 		return _allItemsTotalWidth;
 	}
 
-	function moveMovable(n,dist){
-		log(n,"@moveMovable " + dist);
+	function moveMovable(dist,n){
+		log("@moveMovable " + dist, n);
 		setMovableLeft(n+1,getMovableLeft(n+1) + dist);
 	}
 
 	function resetMovablePosition(n){
 		//make sure that the movable is where it needs to be
-		log(n,"@resetMovablePosition");
-		log1(n,"_currentIndex " + _currentIndex);
+		log("@resetMovablePosition", n);
+		log1("_currentIndex " + _currentIndex, n);
 		var le = 0;
 		for(var i=0; i<_currentIndex; i++){
 			le += _allItemsWithArray[i];
 		}
-		log1(n,-le);
+		log1(-le, n);
 		setMovableLeft(n+1,-le);
 	}
 
@@ -511,33 +521,33 @@ var Carousel = function(element, args){
 	}
 
 	function shiftMovableOneLeft(n){
-		log(n,"@shiftMovableOneLeft");
+		log("@shiftMovableOneLeft", n);
 
 		var newCurrentIndex =_currentIndex + _originalItems.length;
 
-		log1(n,"_currentIndex "+ _currentIndex);
-		log1(n,"newCurrentIndex "+ newCurrentIndex);
+		log1("_currentIndex "+ _currentIndex, n);
+		log1("newCurrentIndex "+ newCurrentIndex, n);
 
 		var movableRight =  getMovableRight(n+1);
 		var newMovableRight = movableRight - _originalItemsTotalWidth;
-		log1(n, "movableRight " + movableRight );
-		log1(n, "newMovableRight " + newMovableRight );
-		log1(n, "_originalItemsTotalWidth " + _originalItemsTotalWidth);
-		log1(n, "_viewportWidth " + _viewportWidth);
+		log1( "movableRight " + movableRight, n);
+		log1( "newMovableRight " + newMovableRight, n);
+		log1( "_originalItemsTotalWidth " + _originalItemsTotalWidth, n);
+		log1( "_viewportWidth " + _viewportWidth, n);
 
 		var check1 = newMovableRight >= _viewportWidth;
 		var check2 = newCurrentIndex < _allItemsWithArray.length;
 
-		log1(n,"check1 "+check1);
-		log1(n,"check2 "+check2);
+		log1("check1 "+check1, n);
+		log1("check2 "+check2, n);
 
 		if(check1 && check2){
-			moveMovable(n+1, - _originalItemsTotalWidth);
+			moveMovable(- _originalItemsTotalWidth,n+1);
 			_currentIndex = newCurrentIndex;
-			log1(n,"new currentIndex " + _currentIndex);
+			log1("new currentIndex " + _currentIndex, n);
 			return true;
 		}else{
-			log1(n,"Cannot more the movable left any further");
+			log1("Cannot more the movable left any further", n);
 			return false;
 		}
 	}
@@ -554,53 +564,53 @@ var Carousel = function(element, args){
 	}
 
 	function shiftMovableOneRight(n){
-		log(n,"@shiftMovableOneRight");
+		log("@shiftMovableOneRight", n);
 
 		var newCurrentIndex =_currentIndex - _originalItems.length;
-		log1(n,"newCurrentIndex " + newCurrentIndex);
+		log1("newCurrentIndex " + newCurrentIndex, n);
 
 		// var check1 = getMovableLeft()<0;//there are no items on the left
 		var check2 = newCurrentIndex>=0;
 
-		log1(n,"check " + check2);
+		log1("check " + check2, n);
 
 		if( check2 ){
-			moveMovable(n+1,_originalItemsTotalWidth);
+			moveMovable(_originalItemsTotalWidth,n+1);
 			_currentIndex = newCurrentIndex;
-			log1(n,"new currentIndex " + _currentIndex);
+			log1("new currentIndex " + _currentIndex, n);
 			return true;
 		}else{
-			log1(n,"Cannot move movable right any further");
+			log1("Cannot move movable right any further", n);
 			return false;
 		}
 
 	}
 
 	function addCurrentHighlight(n){
-		log(n,"@addCurrentHighlight " + _currentIndex);
-		addHighlight(n+1,_currentIndex);
+		log("@addCurrentHighlight " + _currentIndex, n);
+		addHighlight(_currentIndex,n+1);
 	}
 
-	function addHighlight(n,index){
-		log(n,"@addHighlight " + index);
+	function addHighlight(index,n){
+		log("@addHighlight " + index, n);
 		$(".figure",_$element).eq(index).fadeTo(0,1);
 	}
 
-	function removeHighlight(n,index){
+	function removeHighlight(index,n){
 		$(".figure",_$element).eq(index).fadeTo(0,.5);
 		//hide caption
 		$(".figcaption",_$element).eq(index).hide();
 	}
 
 	function showCurrentCaption(n){
-		log(n,"showCurrentCaption " + _currentIndex);
-		showCaption(n+1,_currentIndex);
+		log("showCurrentCaption " + _currentIndex, n);
+		showCaption(_currentIndex,n+1);
 	}
 
-	function showCaption(n,index){
-		log(n,"@showCaption " + index);
-		index = getCompressedIndex(n+1,index);
-		log(n, "index " + index);
+	function showCaption(index,n){
+		log("@showCaption " + index, n);
+		index = getCompressedIndex(index,n+1);
+		log( "index " + index, n);
 		var cap = _captions[index];
 		cap.show();
 		_$captionElement.html( cap );
@@ -609,10 +619,10 @@ var Carousel = function(element, args){
 	}	
 
 	function showCurrentCounter(n){
-		log(n,"@showCurrentCounter");
+		log("@showCurrentCounter", n);
 		if(_$counterElement){
 			var ix = getCompressedCurrentIndex(n+1);
-			log1(n,"ix " + ix);
+			log1("ix " + ix, n);
 			_$counterElement.html("Showing image " + (getCompressedCurrentIndex(n+1)+1) + " of " + _originalItemsCount);
 		}
 	}
@@ -623,10 +633,10 @@ var Carousel = function(element, args){
 
 	function getCompressedCurrentIndex(n){
 		//return the index that corresponds to the current image in the array of original items
-		return getCompressedIndex(n+1,_currentIndex);
+		return getCompressedIndex(_currentIndex,n+1);
 	}
 
-	function getCompressedIndex(n,index){
+	function getCompressedIndex(index,n){
 		//given any image index
 		
 		//return the index that corresponds to this image in the array of original items
@@ -637,7 +647,7 @@ var Carousel = function(element, args){
 		return ix;
 	}
 
-	function log(nesting,msg){
+	function log(msg,nesting){
 		if(!_debug) return;
 		var output = "";
 		for(var a=0; a<nesting; a++){
@@ -647,8 +657,14 @@ var Carousel = function(element, args){
 		if(console.log) console.log(output);
 	}
 
-	function log1(nesting,msg){
-		log(nesting+1,msg);
+	function log1(msg,nesting){
+		log(msg,nesting+1);
 	}
+
+	//public functions
+	_this.getCurrentIndex = getCompressedCurrentIndex;
+	_this.moveTo = publicMoveTo;
+
+	return _this;
 
 };

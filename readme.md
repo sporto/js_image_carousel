@@ -122,7 +122,13 @@ Optional reference to a jquery element to be used as container for the captions
 **counterElement** (null)
 Optional reference to a jquery element to be used as container for counter
 
+**onChange**
+Callback. Called when the gallery changes to a new image.
+
 ##Changelog
+
+v.0.6.3
+Added onChange callback
 
 v.0.6.2
 Added autoSpeed option
