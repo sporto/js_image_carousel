@@ -98,8 +98,11 @@ The following options are available:
 **speed** (1000)
 Speed of transition in milliseconds
 
-**autoSpeed*** (0)
-If set other than 0, the carousel will play automatically
+**auto** (false)
+If set to true the carousel will play automatically
+
+**autoSpeed*** (5000)
+Interval for automatic play
 
 **showMultiple** (true)
 Show multiple images at the same time in the viewport (Only relevant if images are smaller than the viewport)
@@ -122,10 +125,27 @@ Optional reference to a jquery element to be used as container for the captions
 **counterElement** (null)
 Optional reference to a jquery element to be used as container for counter
 
+##Callbacks
+
 **onChange**
-Callback. Called when the gallery changes to a new image.
+Called when the gallery changes to a new image.
+
+##Public Methods
+
+startAuto();
+
+stopAuto();
+
+getCurrentIndex();
+
+moveTo();
+
+
 
 ##Changelog
+
+v.0.6.4
+Added public methods startAuto and stopAuto
 
 v.0.6.3
 Added onChange callback

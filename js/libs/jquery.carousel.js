@@ -1,7 +1,7 @@
 /********************************************************************************************
 * Author: Sebastian Porto
 * Nov 2011
-* v.0.6.3
+* v.0.6.4
 * https://github.com/sporto/js_image_carousel
 * ******************************************************************************************/
 
@@ -29,15 +29,17 @@ var Carousel = function(element, args){
 	var _$counterElement;
 	var _clickEnable=true;
 	var _speed = 1000;
-	var _autoSpeed = 0;
+	var _auto=false;
+	var _autoSpeed = 5000;
 	var _autoTimer;
-	var _debug = false;	
+	var _debug = false;
 	var _captions = [];
 	var _$captionElement;
 	var _preItemsOffset = 0 ; //difference between the first item and the original first item
 	var _callbacks = {};
 
 	if(args.speed) _speed = args.speed;
+	if(args.auto) _auto = args.auto;
 	if(args.autoSpeed) _autoSpeed = args.autoSpeed;
 	if(args.debug) _debug = args.debug;
 	if(args.btnPrevious) _$arrowPrevious = args.btnPrevious;
@@ -156,8 +158,11 @@ var Carousel = function(element, args){
 
 	function startAuto(n){
 		log("@startAuto", n);
+		log1("_auto = " + _auto,n);
+		if (!_auto) return;
+
 		if(_autoSpeed>0){
-			_autoTimer = setInterval(
+			_autoTimer = window.setInterval(
 				function(){
 					moveNext(n+1);
 				},
@@ -166,8 +171,19 @@ var Carousel = function(element, args){
 		}
 	}
 
-	function stopAuto(){
-		clearInterval(_autoTimer);
+	function publicStartAuto(){
+		log("@publicStartAuto");
+		_auto = true;
+		startAuto(0);
+	}
+
+	function stopAuto(n){
+		log("@stopAuto", n);
+		window.clearInterval(_autoTimer);
+	}
+
+	function publicStopAuto(){
+		stopAuto(0);
 	}
 
 	function removeCurrentStyles(n){
@@ -664,6 +680,8 @@ var Carousel = function(element, args){
 	//public functions
 	_this.getCurrentIndex = getCompressedCurrentIndex;
 	_this.moveTo = publicMoveTo;
+	_this.startAuto = publicStartAuto;
+	_this.stopAuto = publicStopAuto;
 
 	return _this;
 
