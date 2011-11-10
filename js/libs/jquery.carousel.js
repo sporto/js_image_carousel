@@ -73,23 +73,44 @@ var Carousel = function(element, args){
 		$(".figure",_$element).wrapAll("<div class='viewport'><div class='movable'></div></div>");
 	}
 
+	function getImageWidth($image){
+		var width=0;
+		width = parseInt($image.attr("width")); //try the image attribute first
+		if(width>0) return width;
+		width = parseInt($image[0].width);//try the width property
+		return width;
+	}
+
 	function waitForImages(n){
 		log("@waitForImages", n);
+		var image, 
+			$image,
+			width;
 
 		var $images = $(".figure img", _$element);
 		_originalItemsCount = $images.length;
 
 		for(var ix=0; ix<_originalItemsCount; ix++){
-			var image = $images[ix];
-			$(image).data("index",ix);//store the index
+			//image = $images[ix];
+			$images.eq(ix).data("index",ix);//store the index
+			checkImageLoaded($images[ix]);
+		}
+	}
 
-			if(image.complete && image.width!==0){
-				log1( "Image complete " + ix, n);
-				onImageLoaded(image,n+1);
-			}else{
-				reloadImage(image,n+1);
-			}
-			
+	function checkImageLoaded(image,n){
+		log("@checkImageLoaded");
+		var $image = $(image);
+		var width	= getImageWidth($image);
+
+		log("src " + $image.attr("src") );
+		log("image.complete " + image.complete);
+		log("width " + width);
+
+		if(width!==0){
+			log1("Image complete", n);
+			onImageLoaded(image,n+1);
+		}else{
+			reloadImage(image,n+1);
 		}
 	}
 
@@ -97,24 +118,34 @@ var Carousel = function(element, args){
 		log("@reloadImage",n)
 		//var src = $(image).attr("src");
 		var src = image.src;
+		log1("src = " + src,n);
 		// log1("Image complete " + image.complete);
 		image.onload=function(event){
 			onImageLoaded(image,n+1);
 		};
 		image.src = "";//trigger a reload
-		image.src = src;
+		setTimeout(
+			function(){
+				log("Reloading image " + src);
+				image.src = src
+			},
+			500);
 	}
 
 	function onImageLoaded(image,n){
 		log("@onImageLoaded", n);
-		var ix = $(image).data("index");
+		var $image = $(image);
+
+		var ix = $image.data("index");
 		log1( "index " + ix, n);
 
-		//var w = image.width;
-		log1( "image.width " + image.width, n);
+			//var w = image.width;
+		log1("image width " + getImageWidth($(image)), n);
+		log1("src = " + image.src);
 
 		//_originalItemsWidthsArray[ix] = w;
 		_imagesLoaded++;
+		log1("_imagesLoaded " + _imagesLoaded, n);
 		if(_originalItemsCount===_imagesLoaded) initWithImages(n+1);
 	}
 
@@ -232,9 +263,9 @@ var Carousel = function(element, args){
 		$caption.hide();
 
 		var $image = $("img",$item);
-		var image = $image.get(0);
+		//var image = $image.get(0);
 
-		var itemWidth = image.width;
+		var itemWidth = getImageWidth($image);
 		log1( "itemWidth " +itemWidth, n);
 
 
