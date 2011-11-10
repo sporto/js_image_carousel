@@ -1,7 +1,7 @@
 /********************************************************************************************
 * Author: Sebastian Porto
 * Nov 2011
-* v.0.6.4
+* v.0.6.5
 * https://github.com/sporto/js_image_carousel
 * ******************************************************************************************/
 
@@ -37,6 +37,11 @@ var Carousel = function(element, args){
 	var _$captionElement;
 	var _preItemsOffset = 0 ; //difference between the first item and the original first item
 	var _callbacks = {};
+	var _logger ={
+		debug:function(msg){
+			if(console.log) console.log(msg);
+		}
+	};
 
 	if(args.speed) _speed = args.speed;
 	if(args.auto) _auto = args.auto;
@@ -47,6 +52,7 @@ var Carousel = function(element, args){
 	if(args.captionElement) _$captionElement = args.captionElement;
 	if(args.counterElement) _$counterElement = args.counterElement;
 	if(args.onChange) _callbacks.onChange = args.onChange;
+	if(args.logger) _logger = args.logger;
 
 	init(0);
 	
@@ -670,7 +676,8 @@ var Carousel = function(element, args){
 			output += " - ";
 		}
 		output += msg;
-		if(console.log) console.log(output);
+
+		_logger.debug(output);
 	}
 
 	function log1(msg,nesting){
